@@ -1,8 +1,9 @@
+local modFolder="__Kux-OrbitalIonCannon__" -- Orbital Ion Cannon
 data:extend({
 	{
 		type = "item",
 		name = "orbital-ion-cannon",
-		icon = "__Orbital Ion Cannon__/graphics/icon64.png",
+		icon = modFolder.."/graphics/icon64.png",
 		icon_size = 64,
 		subgroup = "defensive-structure",
 		order = "e[orbital-ion-cannon]",
@@ -11,7 +12,7 @@ data:extend({
 	{
 		type = "item",
 		name = "ion-cannon-targeter",
-		icon = "__Orbital Ion Cannon__/graphics/crosshairs64.png",
+		icon = modFolder.."/graphics/crosshairs64.png",
 		icon_size = 64,
 		place_result = "ion-cannon-targeter",
 		subgroup = "capsule",

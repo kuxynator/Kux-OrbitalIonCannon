@@ -49,12 +49,12 @@ function On_Init()
 	global.klaxonTick = global.klaxonTick or 0
 	global.auto_tick = global.auto_tick or 0
 	global.readyTick = {}
-	if remote.interfaces["silo_script"] then
-		local tracked_items = remote.call("silo_script", "get_tracked_items")
-		if not tracked_items["orbital-ion-cannon"] then
-			remote.call("silo_script", "add_tracked_item", "orbital-ion-cannon")
-		end
-	end
+--	if remote.interfaces["silo_script"] then
+--		local tracked_items = remote.call("silo_script", "get_tracked_items") --COMPATIBILITY 1.1 get_tracked_items removed
+--		if not tracked_items["orbital-ion-cannon"] then
+--			remote.call("silo_script", "add_tracked_item", "orbital-ion-cannon") --COMPATIBILITY 1.1 add_tracked_item removed
+--		end
+--	end
 	if not global.permissions then
 		global.permissions = {}
 		global.permissions[-2] = settings.global["ion-cannon-auto-targeting"].value
@@ -522,7 +522,7 @@ script.on_event(defines.events.on_trigger_created_entity, function(event)
 	end
 end)
 
-script.on_event(defines.events.on_put_item, function(event)
+script.on_event(defines.events.on_pre_build, function(event) --COMPATIBILITY 1.1 'on_put_item' ranamed to 'on_pre_build'
 	local current_tick = event.tick
 	if global.tick and global.tick > current_tick then
 		return

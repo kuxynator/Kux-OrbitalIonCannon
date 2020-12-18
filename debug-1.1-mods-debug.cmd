@@ -1,8 +1,11 @@
 @echo off
-set exe=factorio_debug_1.1.exe
-set root=C:\Program Files\Factorio\1.1.0-experimental
+set version=1.1
+set exeName=factorio_debug_%version%.exe
+set root=C:\Program Files\Factorio\%version%
 set do="D:\Develop\Extern\GitHub.KsWare\FactorioCmdTools\FactorioCmdTools\bin\Debug\netcoreapp3.1\FactorioCmdTools.exe"
 set mods=-mods "%root%\mods-debug"
-set mods=-exe "%root%\bin\x64\%exe%"
-%do% update -fv 1.1 %exe% %mods%
+set exe=-exe "%root%\bin\x64\%exeName%"
+echo %do% update -fv %version% %exe% %mods% -kill -start
+echo start?
+%do% update -fv %version% %exe% %mods% -kill -start
 pause

@@ -1,3 +1,5 @@
+modFolder="__Kux-OrbitalIonCannon__" -- Orbital Ion Cannon
+
 require("prototypes.items")
 require("prototypes.entities")
 require("prototypes.recipes")

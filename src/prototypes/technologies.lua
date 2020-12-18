@@ -2,7 +2,7 @@ data:extend({
 	{
 		type = "technology",
 		name = "orbital-ion-cannon",
-		icon = "__Orbital Ion Cannon__/graphics/icon64.png",
+		icon = modFolder.."/graphics/icon64.png",
 		icon_size = 64,
 		prerequisites = {"rocket-silo", "energy-weapons-damage-6"},
 		effects =
@@ -36,7 +36,7 @@ data:extend({
 	{
 		type = "technology",
 		name = "auto-targeting",
-		icon = "__Orbital Ion Cannon__/graphics/AutoTargetingTech.png",
+		icon = modFolder.."/graphics/AutoTargetingTech.png",
 		icon_size = 64,
 		prerequisites = {"orbital-ion-cannon"},
 		effects = {},

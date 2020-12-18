@@ -1,7 +1,7 @@
 local ion_cannon_targeter = util.table.deepcopy(data.raw["ammo-turret"]["gun-turret"])
 
 ion_cannon_targeter.name = "ion-cannon-targeter"
-ion_cannon_targeter.icon = "__Orbital Ion Cannon__/graphics/crosshairs64.png"
+ion_cannon_targeter.icon = modFolder.."/graphics/crosshairs64.png"
 ion_cannon_targeter.icon_size = 64
 ion_cannon_targeter.icon_mipmaps = 0
 ion_cannon_targeter.flags = {"placeable-off-grid", "not-on-map"}
@@ -33,7 +33,7 @@ ion_cannon_targeter.base_picture =
 	layers =
 	{
 		{
-			filename = "__Orbital Ion Cannon__/graphics/crosshairs64.png",
+			filename = modFolder.."/graphics/crosshairs64.png",
 			line_length = 1,
 			width = 64,
 			height = 64,
@@ -265,7 +265,7 @@ data:extend({
 		variations =
 		{
 			{
-				filename = "__Orbital Ion Cannon__/sound/Klaxon.ogg",
+				filename = modFolder.."/sound/Klaxon.ogg",
 				volume = 0.75
 			},
 		},
@@ -274,7 +274,7 @@ data:extend({
 	{
 		type = "simple-entity",
 		name = "ion-cannon-target",
-		icon = "__Orbital Ion Cannon__/graphics/crosshairs64.png",
+		icon = modFolder.."/graphics/crosshairs64.png",
 		icon_size = 64,
 		flags = {"placeable-off-grid", "not-on-map"},
 		max_health = 1,
@@ -286,7 +286,7 @@ data:extend({
 		animations =
 		{
 			{
-				filename = "__Orbital Ion Cannon__/graphics/crosshairs_anim.png",
+				filename = modFolder.."/graphics/crosshairs_anim.png",
 				priority = "low",
 				width = 64,
 				height = 64,
@@ -300,7 +300,7 @@ data:extend({
 		-- pictures =
 		-- {
 			-- {
-				-- filename = "__Orbital Ion Cannon__/graphics/crosshairsEntity.png",
+				-- filename = modFolder.."/graphics/crosshairsEntity.png",
 				-- priority = "low",
 				-- width = 64,
 				-- height = 64,
@@ -318,7 +318,7 @@ data:extend({
 		show_when_smoke_off = true,
 		animation =
 		{
-			filename = "__Orbital Ion Cannon__/graphics/explosion.png",
+			filename = modFolder.."/graphics/explosion.png",
 			priority = "low",
 			width = 192,
 			height = 192,
@@ -341,7 +341,7 @@ data:extend({
 		show_when_smoke_off = true,
 		animation =
 		{
-			filename = "__Orbital Ion Cannon__/graphics/IonBeam.png",
+			filename = modFolder.."/graphics/IonBeam.png",
 			priority = "low",
 			width = 110,
 			height = 1871,
@@ -381,7 +381,7 @@ data:extend({
 		sound =
 		{
 			{
-				filename = "__Orbital Ion Cannon__/sound/OrbitalIonCannon.ogg",
+				filename = modFolder.."/sound/OrbitalIonCannon.ogg",
 				volume = 2.0
 			},
 		},
