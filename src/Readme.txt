@@ -1,4 +1,22 @@
-Orbital Ion Cannon 1.8.2
+Orbital Ion Cannon 2.x.x (continued by kuxynator for Factorio 1.1 )
+========================================
+
+- Update for Factorio 1.1
+- adaptions for Space Exploration
+    - pay attention to several surfaces (for planets and moons)
+    - optional early recipe
+- Workaround for Rampant Arsenal technology tree changes
+
+### [v2.1.x] Experimental feature for Space Exploration
+For each planet/moon a separate orbital ion cannon must be launched.
+Please report issues.
+
+
+## Credits
+Supercheese [Orbital Ion Cannon](https://mods.factorio.com/mod/Orbital%20Ion%20Cannon) 
+Original Homepage: http://www.factorioforums.com/forum/viewtopic.php?f=93&t=17910
+
+Original description: [Orbital Ion Cannon](https://mods.factorio.com/mod/Orbital%20Ion%20Cannon) 1.8.2
 ========================
 
 Version 1.8.2 was released May 1, 2020, was tested using Factorio v0.18.22, and was authored by Supercheese, with contributions from emperorjimmy, badway, madmaxoft, bNarFProfCrazy, Danielv123, Yousei9, WPettersson, and Martok88.

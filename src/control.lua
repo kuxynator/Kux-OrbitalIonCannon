@@ -1,3 +1,5 @@
+if script.active_mods["gvv"] then require("__gvv__.gvv")() end
+
 require "util"
 -- require("__stdlib__/stdlib/core")
 local Chunk = require("__stdlib__/stdlib/area/chunk")
@@ -42,7 +44,19 @@ function On_Init()
 	if not global.forces_ion_cannon_table then
 		global.forces_ion_cannon_table = {}
 		global.forces_ion_cannon_table["player"] = {}
+	else
+		--print("OrbitalIonCannon:OnInit")
+		for fn,f in pairs(global.forces_ion_cannon_table) do
+			--print("Update cannon force ''"..fn.."'' "..serpent.line(f))
+			for i,c in ipairs(f) do				
+				if not c[3] then 
+					print("Update cannon #"..tostring(i).." surface to 'nauvis'")
+					c[3] = "nauvis" 
+				end
+			end
+		end
 	end
+
 	global.goToFull = global.goToFull or {}
 	global.markers = global.markers or {}
 	global.holding_targeter = global.holding_targeter or {}
@@ -185,9 +199,9 @@ function open_GUI(player)
 			end
 			frame.add{type = "table", column_count = 1, name = "ion-cannon-table"}
 			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-in-orbit", #global.forces_ion_cannon_table[forceName]}}
-			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force)}}
-			if countIonCannonsReady(force) < #global.forces_ion_cannon_table[forceName] then
-				frame["ion-cannon-table"].add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force)}}
+			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force, player.surface)}}
+			if countIonCannonsReady(force, player.surface) < #global.forces_ion_cannon_table[forceName] then
+				frame["ion-cannon-table"].add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force, player.surface)}}
 			end
 		end
 	end
@@ -202,7 +216,7 @@ function update_GUI(player)
 		local player_index = player.index
 		if frame["ion-cannon-table"] and not global.goToFull[player_index] then
 			frame["ion-cannon-table"].destroy()
-			frame.add{type = "table", column_count = 2, name = "ion-cannon-table"}
+			frame.add{type = "table", column_count = 3, name = "ion-cannon-table"}
 			for i = 1, #global.forces_ion_cannon_table[forceName] do
 				frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannon-num", i}}
 				if global.forces_ion_cannon_table[forceName][i][2] == 1 then
@@ -210,25 +224,26 @@ function update_GUI(player)
 				else
 					frame["ion-cannon-table"].add{type = "label", caption = {"cooldown", global.forces_ion_cannon_table[forceName][i][1]}}
 				end
+				frame["ion-cannon-table"].add{type = "label", caption = "["..tostring(global.forces_ion_cannon_table[forceName][i][3]).."]"}
 			end
 		end
 		if frame["ion-cannon-table"] and global.goToFull[player_index] then
 			frame["ion-cannon-table"].destroy()
 			frame.add{type = "table", column_count = 1, name = "ion-cannon-table"}
 			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-in-orbit", #global.forces_ion_cannon_table[forceName]}}
-			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force)}}
-			if countIonCannonsReady(force) < #global.forces_ion_cannon_table[forceName] then
-				frame["ion-cannon-table"].add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force)}}
+			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force, player.surface)}}
+			if countIonCannonsReady(force, player.surface) < #global.forces_ion_cannon_table[forceName] then
+				frame["ion-cannon-table"].add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force, player.surface)}}
 			end
 		end
 	end
 end
 
-function countIonCannonsReady(force)
+function countIonCannonsReady(force, surface) -- TODO check all callers
 	local ionCannonsReady = 0
 	if global.forces_ion_cannon_table[force.name] then
 		for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
-			if cooldown[2] == 1 then
+			if cooldown[2] == 1 and cooldown[3] == surface then
 				ionCannonsReady = ionCannonsReady + 1
 			end
 		end
@@ -236,25 +251,33 @@ function countIonCannonsReady(force)
 	return ionCannonsReady
 end
 
-function timeUntilNextReady(force)
+function timeUntilNextReady(force, surface) -- TODO check all callers
 	local shortestCooldown = settings.global["ion-cannon-cooldown-seconds"].value
 	for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
-		if cooldown[1] < shortestCooldown and cooldown[2] == 0 then
+		if cooldown[1] < shortestCooldown and cooldown[2] == 0 and cooldown[3] == surface.name then
 			shortestCooldown = cooldown[1]
 		end
 	end
 	return shortestCooldown
 end
 
+--- Called when LuaGuiElement is clicked.
+-- element :: LuaGuiElement: The clicked element.
+-- player_index :: uint: The player who did the clicking.
+-- button :: defines.mouse_button_type: The mouse button used if any.
+-- alt :: boolean: If alt was pressed.
+-- control :: boolean: If control was pressed.
+-- shift :: boolean: If shift was pressed.
 script.on_event(defines.events.on_gui_click, function(event)
 	local player = game.players[event.element.player_index]
 	local force = player.force
 	local name = event.element.name
+	local surfaceName = player.surface.name
 	if name == "ion-cannon-button" then
 		open_GUI(player)
 		return
 	elseif name == "add-ion-cannon" then
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0})
+		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
 		global.IonCannonLaunched = true
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do
@@ -264,11 +287,11 @@ script.on_event(defines.events.on_gui_click, function(event)
 		force.print({"ion-cannons-in-orbit" , #global.forces_ion_cannon_table[force.name]})
 		return
 	elseif name == "add-five-ion-cannon" then
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0})
+		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
 		global.IonCannonLaunched = true
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do
@@ -423,7 +446,7 @@ function targetIonCannon(force, position, surface, player)
 	local cannonNum = 0
 	local targeterName = "Auto"
 	for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
-		if cooldown[2] == 1 then
+		if cooldown[2] == 1 and cooldown[3] == surface.name then
 			cannonNum = i
 			break
 		end
@@ -476,10 +499,15 @@ function targetIonCannon(force, position, surface, player)
 	end
 end
 
+--- Called when the rocket is launched.
+-- rocket :: LuaEntity
+-- rocket_silo :: LuaEntity (optional)
+-- player_index :: uint (optional): The player that is riding the rocket, if any.
 script.on_event(defines.events.on_rocket_launched, function(event)
 	local force = event.rocket.force
+	local surfaceName = event.rocket_silo.surface.name
 	if event.rocket.get_item_count("orbital-ion-cannon") > 0 then
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0})
+		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
 		global.IonCannonLaunched = true
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do

@@ -48,6 +48,13 @@ data:extend({
 		order = "f",
 		default_value = true
 	},
+	{
+		type = "bool-setting",
+		name = "ion-cannon-early-recipe",
+		setting_type = "startup",
+		order = "g",
+		default_value = false
+	},
 	-- Runtime (global)
 	{
 		type = "bool-setting",
@@ -138,5 +145,5 @@ data:extend({
 		setting_type = "runtime-per-user",
 		order = "e",
 		default_value = true
-	}
+	}	
 })

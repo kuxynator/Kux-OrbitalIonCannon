@@ -1,9 +1,9 @@
 modFolder="__Kux-OrbitalIonCannon__" -- Orbital Ion Cannon
-
+LoadState="data"
 require("prototypes.items")
 require("prototypes.entities")
 require("prototypes.recipes")
-require("prototypes.technologies")
+require("prototypes.technologies").init()
 require("prototypes.announcers")
 require("prototypes.styles")
 

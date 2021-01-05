@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.1
+Date: 2021-01-05
+  Changes:
+    - Settings for an eraly recipe (Space Exploration)
+    - Workourand for Rampant Arsenal technolgy tree changes
+---------------------------------------------------------------------------------------------------
+Version: 2.1.0
+Date: 2020-12-18
+  Features:
+    - respect of the correct surface (Space Exploration) [experimental, please report issues]
+---------------------------------------------------------------------------------------------------
 Version: 2.0.0
 Date: 2020-12-18
   Info:
