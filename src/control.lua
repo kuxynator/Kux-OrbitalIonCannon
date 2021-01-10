@@ -315,9 +315,13 @@ script.on_event(defines.events.on_gui_click, function(event)
 end)
 
 script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
-	local player = game.players[event.player_index]
-	if global.IonCannonLaunched or player.cheat_mode or player.admin then
-		open_GUI(player)
+	if event.player_index then
+		--[[ why we should open the GUI always? KUX MODIFACTION
+		local player = game.players[event.player_index]
+		if global.IonCannonLaunched or player.cheat_mode or player.admin then
+			open_GUI(player)
+		end
+	]]--
 	end
 end)
 
@@ -356,7 +360,11 @@ script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
 			if not global.permissions[index] then
 				player.print({"ion-permission-denied"})
 				playSoundForPlayer("unable-to-comply", player)
-				return player.clean_cursor()
+				if player.clear_cursor then --COMPATIBILITY 1.1.0
+					return player.clear_cursor()
+				else
+					return player.clean_cursor() -- factorio version < 1.1.0
+				end
 			end
 		end
 		if (player.cheat_mode or (#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) and not global.holding_targeter[index] then
