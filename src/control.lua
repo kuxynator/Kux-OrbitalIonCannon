@@ -4,7 +4,10 @@ require "util"
 -- require("__stdlib__/stdlib/core")
 local Chunk = require("__stdlib__/stdlib/area/chunk")
 local Position = require("__stdlib__/stdlib/area/position")
-require "autotargeter"
+require "modules.autotargeter"
+require "modules.gui"
+
+_G.when_ion_cannon_targeted = nil
 
 script.on_init(function() On_Init() end)
 script.on_configuration_changed(function() On_Init() end)
@@ -26,15 +29,15 @@ function generateEvents()
 end
 
 function getIonCannonTargetedEventID()
-	if not when_ion_cannon_targeted then
-		when_ion_cannon_targeted = script.generate_event_name()
+	if not _G.when_ion_cannon_targeted then
+		_G.when_ion_cannon_targeted = script.generate_event_name()
 	end
-	return when_ion_cannon_targeted
+	return _G.when_ion_cannon_targeted
 end
 
 function getIonCannonFiredEventID()
-	if not when_ion_cannon_fired then
-		when_ion_cannon_fired = script.generate_event_name()
+	if not _G.when_ion_cannon_fired then
+		_G.when_ion_cannon_fired = script.generate_event_name()
 	end
 	return when_ion_cannon_fired
 end
@@ -122,151 +125,6 @@ script.on_event(defines.events.on_forces_merging, function(event)
 		-- init_GUI(player)
 	-- end
 end)
-
-function init_GUI(player)
-	if #global.forces_ion_cannon_table[player.force.name] == 0 and not player.cheat_mode then
-		local frame = player.gui.left["ion-cannon-stats"]
-		if frame then
-			frame.destroy()
-		end
-		if player.gui.top["ion-cannon-button"] then
-			player.gui.top["ion-cannon-button"].destroy()
-		end
-		return
-	end
-	if not player.gui.top["ion-cannon-button"] then
-		player.gui.top.add{type = "button", name = "ion-cannon-button", style = "ion-cannon-button-style"}
-	end
-end
-
-function open_GUI(player)
-	local frame = player.gui.left["ion-cannon-stats"]
-	local force = player.force
-	local forceName = force.name
-	local player_index = player.index
-	if frame and global.goToFull[player_index] then
-		frame.destroy()
-	else
-		if global.goToFull[player_index] and #global.forces_ion_cannon_table[forceName] < 40 then
-			global.goToFull[player_index] = false
-			if frame then
-				frame.destroy()
-			end
-			frame = player.gui.left.add{type = "frame", name = "ion-cannon-stats", direction = "vertical"}
-			frame.add{type = "label", caption = {"ion-cannon-details-full"}}
-			frame.add{type = "table", column_count = 2, name = "ion-cannon-table"}
-			for i = 1, #global.forces_ion_cannon_table[forceName] do
-				frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannon-num", i}}
-				if global.forces_ion_cannon_table[forceName][i][2] == 1 then
-					frame["ion-cannon-table"].add{type = "label", caption = {"ready"}}
-				else
-					frame["ion-cannon-table"].add{type = "label", caption = {"cooldown", global.forces_ion_cannon_table[forceName][i][1]}}
-				end
-			end
-		else
-			global.goToFull[player_index] = true
-			if frame then
-				frame.destroy()
-			end
-			frame = player.gui.left.add{type = "frame", name = "ion-cannon-stats", direction = "vertical"}
-			frame.add{type = "label", caption = {"ion-cannon-details-compact"}}
-			if player.admin then
-				frame.add{type = "table", column_count = 2, name = "ion-cannon-admin-panel-header"}
-				frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"ion-cannon-admin-panel-show"}}
-				frame["ion-cannon-admin-panel-header"].add{type = "checkbox", state = global.permissions[-1], name = "show"}
-				-- frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"ion-cannon-cheat-menu-show"}}
-				if global.permissions[-2] == nil then global.permissions[-2] = settings.global["ion-cannon-auto-targeting"].value end
-				-- frame["ion-cannon-admin-panel-header"].add{type = "checkbox", state = global.permissions[-2], name = "cheats"}
-				if frame["ion-cannon-admin-panel-header"]["show"].state then
-					frame.add{type = "table", column_count = 2, name = "ion-cannon-admin-panel-table"}
-					frame["ion-cannon-admin-panel-table"].add{type = "label", caption = {"player-names"}}
-					frame["ion-cannon-admin-panel-table"].add{type = "label", caption = {"allowed"}}
-					frame["ion-cannon-admin-panel-table"].add{type = "label", caption = {"toggle-all"}}
-					frame["ion-cannon-admin-panel-table"].add{type = "checkbox", state = global.permissions[0], name = "0"}
-					for i, player in pairs(game.players) do
-						frame["ion-cannon-admin-panel-table"].add{type = "label", caption = player.name}
-						frame["ion-cannon-admin-panel-table"].add{type = "checkbox", state = global.permissions[player.index], name = player.index .. ""}
-					end
-				end
-				-- if frame["ion-cannon-admin-panel-header"]["cheats"].state then
-				if settings.global["ion-cannon-cheat-menu"].value then
-					frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"ion-cannon-cheat-one"}}
-					frame["ion-cannon-admin-panel-header"].add{type = "button", name = "add-ion-cannon", style = "ion-cannon-button-style"}
-					frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"ion-cannon-cheat-five"}}
-					frame["ion-cannon-admin-panel-header"].add{type = "button", name = "add-five-ion-cannon", style = "ion-cannon-button-style"}
-					frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"ion-cannon-remove-one"}}
-					frame["ion-cannon-admin-panel-header"].add{type = "button", name = "remove-ion-cannon", style = "ion-cannon-remove-button-style"}
-				end
-				frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"mod-setting-name.ion-cannon-auto-targeting"}}
-				frame["ion-cannon-admin-panel-header"].add{type = "checkbox", state = global.permissions[-2], name = "ion-cannon-auto-target-enabled"}
-			end
-			frame.add{type = "table", column_count = 1, name = "ion-cannon-table"}
-			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-in-orbit", #global.forces_ion_cannon_table[forceName]}}
-			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force, player.surface)}}
-			if countIonCannonsReady(force, player.surface) < #global.forces_ion_cannon_table[forceName] then
-				frame["ion-cannon-table"].add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force, player.surface)}}
-			end
-		end
-	end
-end
-
-function update_GUI(player)
-	init_GUI(player)
-	local frame = player.gui.left["ion-cannon-stats"]
-	if frame then
-		local force = player.force
-		local forceName = force.name
-		local player_index = player.index
-		if frame["ion-cannon-table"] and not global.goToFull[player_index] then
-			frame["ion-cannon-table"].destroy()
-			frame.add{type = "table", column_count = 3, name = "ion-cannon-table"}
-			for i = 1, #global.forces_ion_cannon_table[forceName] do
-				frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannon-num", i}}
-				if global.forces_ion_cannon_table[forceName][i][2] == 1 then
-					frame["ion-cannon-table"].add{type = "label", caption = {"ready"}}
-				else
-					frame["ion-cannon-table"].add{type = "label", caption = {"cooldown", global.forces_ion_cannon_table[forceName][i][1]}}
-				end
-				frame["ion-cannon-table"].add{type = "label", caption = "["..tostring(global.forces_ion_cannon_table[forceName][i][3]).."]"}
-			end
-		end
-		if frame["ion-cannon-table"] and global.goToFull[player_index] then
-			frame["ion-cannon-table"].destroy()
-			frame.add{type = "table", column_count = 1, name = "ion-cannon-table"}
-			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-in-orbit", #global.forces_ion_cannon_table[forceName]}}
-			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force, player.surface)}}
-			if countIonCannonsReady(force, player.surface) < #global.forces_ion_cannon_table[forceName] then
-				frame["ion-cannon-table"].add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force, player.surface)}}
-			end
-		end
-	end
-end
-
-function countIonCannonsReady(force, surface) -- TODO check all callers
-	local surfaceName = nil
-	if type(surface) == "string" then surfaceName = surface else surfaceName = surface.name end
-	local ionCannonsReady = 0
-	if global.forces_ion_cannon_table[force.name] then
-		for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
-			if cooldown[2] == 1 and cooldown[3] == surfaceName then
-				ionCannonsReady = ionCannonsReady + 1
-			end
-		end
-	end
-	return ionCannonsReady
-end
-
-function timeUntilNextReady(force, surface) -- TODO check all callers
-	local surfaceName = nil
-	if type(surface) == "string" then surfaceName = surface else surfaceName = surface.name end
-	local shortestCooldown = settings.global["ion-cannon-cooldown-seconds"].value
-	for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
-		if cooldown[1] < shortestCooldown and cooldown[2] == 0 and cooldown[3] == surfaceName then
-			shortestCooldown = cooldown[1]
-		end
-	end
-	return shortestCooldown
-end
 
 --- Called when LuaGuiElement is clicked.
 -- element :: LuaGuiElement: The clicked element.
@@ -357,7 +215,7 @@ script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
 		global.permissions = {}
 		global.permissions[0] = false
 		for i, p in pairs(game.players) do
-			global.permissions[p.index] = player.admin
+			global.permissions[p.index] = p.admin --TODO check. changed from `= player.admin`
 		end
 	end
 	local index = event.player_index
@@ -410,12 +268,11 @@ function process_60_ticks(NthTickEvent)
 end
 
 function ReduceIonCannonCooldowns()
-	for i, force in pairs(game.forces) do
-		local name = force.name
-		if global.forces_ion_cannon_table[name] then
-			for i, cooldown in pairs(global.forces_ion_cannon_table[name]) do
+	for _, force in pairs(game.forces) do
+		if global.forces_ion_cannon_table[force.name] then
+			for k, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
 				if cooldown[1] > 0 then
-					global.forces_ion_cannon_table[name][i][1] = global.forces_ion_cannon_table[name][i][1] - 1
+					global.forces_ion_cannon_table[force.name][k][1] = global.forces_ion_cannon_table[force.name][k][1] - 1
 				end
 			end
 		end
@@ -506,9 +363,9 @@ function targetIonCannon(force, position, surface, player)
 					p.add_custom_alert(IonTarget, {type = "item", name = "orbital-ion-cannon"}, {"ion-cannon-target-location", cannonNum, TargetPosition.x, TargetPosition.y, targeterName}, true)
 				end
 			end
-			script.raise_event(when_ion_cannon_targeted, {surface = surface, force = force, position = position, radius = settings.startup["ion-cannon-radius"].value, player_index = player.index,})		-- Passes event.surface, event.force, event.position, event.radius, and event.player_index
+			script.raise_event(_G.when_ion_cannon_targeted, {surface = surface, force = force, position = position, radius = settings.startup["ion-cannon-radius"].value, player_index = player.index,})		-- Passes event.surface, event.force, event.position, event.radius, and event.player_index
 		else
-			script.raise_event(when_ion_cannon_targeted, {surface = surface, force = force, position = position, radius = settings.startup["ion-cannon-radius"].value})		-- Passes event.surface, event.force, event.position, and event.radius
+			script.raise_event(_G.when_ion_cannon_targeted, {surface = surface, force = force, position = position, radius = settings.startup["ion-cannon-radius"].value})		-- Passes event.surface, event.force, event.position, and event.radius
 		end
 		return cannonNum
 	end
@@ -573,7 +430,7 @@ script.on_event(defines.events.on_trigger_created_entity, function(event)
 	end
 end)
 
-script.on_event(defines.events.on_pre_build, function(event) --COMPATIBILITY 1.1 'on_put_item' ranamed to 'on_pre_build'
+script.on_event(defines.events.on_pre_build, function(event) --COMPATIBILITY 1.1 'on_put_item' renamed to 'on_pre_build'
 	local current_tick = event.tick
 	if global.tick and global.tick > current_tick then
 		return

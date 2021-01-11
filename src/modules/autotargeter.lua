@@ -1,3 +1,4 @@
+require "modules.tools"
 local Chunk = require("__stdlib__/stdlib/area/chunk")
 
 function findNestNear(entity, chunk_position)
