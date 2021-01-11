@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.5
+Date: 2021-01-11
+  Bugfixes:
+    - fix auto-targeting for surfaces
+---------------------------------------------------------------------------------------------------
 Version: 2.1.4
 Date: 2021-01-11
   Bugfixes:
@@ -17,7 +22,7 @@ Date: 2021-01-06
 Version: 2.1.1
 Date: 2021-01-05
   Changes:
-    - Settings for an eraly recipe (Space Exploration)
+    - Settings for an early recipe (Space Exploration)
     - Workourand for Rampant Arsenal technolgy tree changes
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.0
