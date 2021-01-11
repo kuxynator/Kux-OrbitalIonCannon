@@ -70,7 +70,7 @@ script.on_event(defines.events.on_biter_base_built, function(event)
 		local biterBase = event.entity
 		for _, force in pairs(game.forces) do
 			if force.technologies["auto-targeting"].researched == true and force.is_chunk_visible(biterBase.surface, Chunk.from_position(biterBase.position)) then
-				print("insert biter base to Queue")
+				--print("insert biter base to Queue")
 				table.insert(global.forces_ion_cannon_table["Queue"], biterBase)
 				return
 			end

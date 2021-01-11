@@ -46,12 +46,15 @@ function On_Init()
 		global.forces_ion_cannon_table["player"] = {}
 	else
 		--print("OrbitalIonCannon:OnInit")
+		-- MIGRATION: add 3rd column for "surface"
 		for fn,f in pairs(global.forces_ion_cannon_table) do
 			--print("Update cannon force ''"..fn.."'' "..serpent.line(f))
-			for i,c in ipairs(f) do				
-				if not c[3] then 
-					print("Update cannon #"..tostring(i).." surface to 'nauvis'")
-					c[3] = "nauvis" 
+			for i,c in ipairs(f) do
+				--if not c[3] then --TODO bad argument #2 of 3 to 'index' (string expected, got number) ???
+				--  c[3] = "nauvis" end
+				if #c==2 then
+					--"Update cannon #"..tostring(i).." surface to 'nauvis'")
+					table.insert(c, "nauvis")
 				end
 			end
 		end
@@ -514,6 +517,14 @@ end
 script.on_event(defines.events.on_rocket_launched, function(event)
 	local force = event.rocket.force
 	local surfaceName = event.rocket_silo.surface.name
+	local suffix=" Orbit"
+	if surfaceName == "Nauvis Orbit" then
+		surfaceName = "nauvis"
+	elseif #surfaceName > #suffix and string.sub(surfaceName, -#suffix) == suffix then
+		local sn = string.sub(surfaceName, 1, #surfaceName-#suffix)
+		--if game.surfaces[surfaceName] then surfaceName = sn end
+		surfaceName = sn
+	end
 	if event.rocket.get_item_count("orbital-ion-cannon") > 0 then
 		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
 		global.IonCannonLaunched = true
