@@ -5,7 +5,7 @@ tech.init = function ()
 	local prerequision2name= "energy-weapons-damage-"
 
 	if mods["space-exploration"] and settings.startup["ion-cannon-early-recipe"].value then prerequision2level = 4 end
-	if mods["RampantArsenal"] then prerequision2name="rampant-arsenal-technology-energy-weapons-damage-" end
+	if data.raw.technology["rampant-arsenal-technology-energy-weapons-damage-6"] then prerequision2name="rampant-arsenal-technology-energy-weapons-damage-" end
 
 	local ingredients =
 				{

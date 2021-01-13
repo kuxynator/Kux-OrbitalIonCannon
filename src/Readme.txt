@@ -14,6 +14,8 @@ Please report issues.
 
 ## Credits
 Supercheese [Orbital Ion Cannon](https://mods.factorio.com/mod/Orbital%20Ion%20Cannon) 
+ickputzdirwech [Shortcuts 1.1](https://mods.factorio.com/mod/Shortcuts-ick), morley376 [Shortcuts](https://mods.factorio.com/mod/Shortcuts)
+
 Original Homepage: http://www.factorioforums.com/forum/viewtopic.php?f=93&t=17910
 
 Original description: [Orbital Ion Cannon](https://mods.factorio.com/mod/Orbital%20Ion%20Cannon) 1.8.2

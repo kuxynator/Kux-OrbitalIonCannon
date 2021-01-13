@@ -6,7 +6,7 @@ require("prototypes.recipes")
 require("prototypes.technologies").init()
 require("prototypes.announcers")
 require("prototypes.styles")
-
+require("prototypes.shortcuts")
 data:extend({
 	{
 		type = "custom-input",
@@ -15,3 +15,4 @@ data:extend({
 		consuming = "none"
 	}
 })
+

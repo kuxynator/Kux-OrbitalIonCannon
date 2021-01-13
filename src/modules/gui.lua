@@ -1,19 +1,63 @@
 require "modules.tools"
+local mod_gui = require("mod-gui")
+
+UiElementDefinitions = {
+	["ion-cannon-button"] = {type="button", style = "ion-cannon-button-style"}
+}
+
+function getUiElement(parent, name, createIfNotExist)
+	--print("getUiElement",name)
+	if not parent.object_name then
+		parent = findUiElementByName(parent[1], parent[2], createIfNotExist)
+	end
+	if parent == nil then return nil end
+
+	local element = parent[name]
+	if element then return element end
+	if not createIfNotExist then return nil end
+	local definition = UiElementDefinitions[name]
+	if not definition then error("Definition not found. Name: '"..name.."'") end
+	definition["name"]=name
+	definition["index"]=nil
+	print("create "..definition["type"].." '"..definition["name"].."'")
+	return parent.add(definition)
+end
+
+function findUiElementByName(player, name, createIfNotExist)
+	if name == "ion-cannon-button" then return getUiElement(mod_gui.get_button_flow(player), name, createIfNotExist) end
+	error("Unknwon element. Name: '"..name.."'")
+end
+
+function destroyUiElement(player, name)
+	local element = findUiElementByName(player, name, false)
+	if not element then return end
+	element.parent[name].destroy()
+end
+
+function replaceOrCreateUiElement(player, name)
+	local element = findUiElementByName(player, name, false)
+
+	local definition = UiElementDefinitions[name]
+	if not definition then error("Definition not found. Name: '"..name.."'") end
+	if element then
+		local idx = element.get_index_in_parent()
+		definition["index"]=idx
+		element.destroy()
+	end
+	definition["name"]=name
+	return findUiElementByName(player, name, true)
+end
 
 function init_GUI(player)
+	--print("init_GUI")
+	--TODO is called every 60 seconds!
 	if #global.forces_ion_cannon_table[player.force.name] == 0 and not player.cheat_mode then
 		local frame = player.gui.left["ion-cannon-stats"]
-		if frame then
-			frame.destroy()
-		end
-		if player.gui.top["ion-cannon-button"] then
-			player.gui.top["ion-cannon-button"].destroy()
-		end
-		return
+		if frame then frame.destroy() end
+		if player.gui.top["ion-cannon-button"] then player.gui.top["ion-cannon-button"].destroy() end
+		destroyUiElement(player,"ion-cannon-button")
 	end
-	if not player.gui.top["ion-cannon-button"] then
-		player.gui.top.add{type = "button", name = "ion-cannon-button", style = "ion-cannon-button-style"}
-	end
+	findUiElementByName(player, "ion-cannon-button", true)
 end
 
 function open_GUI(player)

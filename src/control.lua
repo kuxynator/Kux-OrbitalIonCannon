@@ -469,3 +469,30 @@ script.on_event(defines.events.on_gui_checked_state_changed, function(event)
 		end
 	end
 end)
+
+local allowed_items = {"ion-cannon-targeter"}
+
+local function give_shortcut_item(player, prototype_name)
+	if game.item_prototypes[prototype_name] then
+		local cc = false
+		if player.clear_cursor then
+			cc = player.clear_cursor() --COMPATIBILITY 1.1
+		else
+			cc = player.clean_cursor() --Factorio < 1.1
+		end
+
+		player.cursor_stack.set_stack({name = prototype_name})
+	end
+end
+
+script.on_event(defines.events.on_lua_shortcut, function(event)
+	local prototype_name = event.prototype_name
+	local player = game.players[event.player_index]
+	if game.shortcut_prototypes[prototype_name] then
+		for _, item_name in pairs(allowed_items) do
+			if item_name == prototype_name then
+				give_shortcut_item(player, prototype_name)
+			end
+		end
+	end
+end)
