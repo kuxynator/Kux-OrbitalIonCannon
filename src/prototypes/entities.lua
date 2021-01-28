@@ -1,4 +1,8 @@
 local ion_cannon_targeter = util.table.deepcopy(data.raw["ammo-turret"]["gun-turret"])
+--local ion_cannon_targeter = util.table.deepcopy(data.raw["capsule"]["artillery-targeting-remote"])
+-- artillery-wagon-cannon (item)
+-- artillery-turret (entity)
+-- artillery-targeting-remote
 
 ion_cannon_targeter.name = "ion-cannon-targeter"
 ion_cannon_targeter.icon = modFolder.."/graphics/crosshairs64.png"
@@ -502,3 +506,5 @@ if not settings.startup["ion-cannon-flames"].value then
 		}
 	}
 end
+
+
