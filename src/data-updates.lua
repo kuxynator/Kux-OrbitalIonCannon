@@ -9,4 +9,4 @@ require("prototypes.technologies").updates()
 
 local am = data.raw["assembling-machine"]["assembling-machine-4"]
 if not am then am = data.raw["assembling-machine"]["assembling-machine-3"] end
-if am.ingredient_count < 8 then am.ingredient_count = 8 end
+if type(am.ingredient_count)=="number" and am.ingredient_count < 8 then am.ingredient_count = 8 end
