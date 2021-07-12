@@ -248,12 +248,14 @@ end
 function targetIonCannon(force, position, surface, player)
 	local cannonNum = 0
 	local targeterName = "Auto"
+
 	for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
 		if cooldown[2] == 1 and cooldown[3] == surface.name then
 			cannonNum = i
 			break
 		end
 	end
+
 	if player then
 		targeterName = player.name
 		if player.cheat_mode == true then
