@@ -122,7 +122,7 @@ data:extend({
 		setting_type = "runtime-per-user",
 		order = "b",
 		default_value = "CommandAndConquer",
-		allowed_values = {"CommandAndConquer", "TiberianSunEVA", "TiberianSunCABAL"}
+		allowed_values = {"CommandAndConquer", "TiberianSunEVA", "TiberianSunCABAL",  "TiberianSunEVA-FR", "TiberianSunCABAL-FR"}
 	},
 	{
 		type = "bool-setting",
