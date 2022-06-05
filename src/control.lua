@@ -138,7 +138,7 @@ end)
 
 script.on_event("ion-cannon-hotkey", function(event)
 	local player = game.players[event.player_index]
-	if global.IonCannonLaunched or player.cheat_mode or player.admin then
+	if global.IonCannonLaunched or --[[player.cheat_mode or]] player.admin then --SE nav sat enables cheat mode, so we can't rely on that
 		open_GUI(player)
 	end
 end)
@@ -258,10 +258,10 @@ function targetIonCannon(force, position, surface, player)
 
 	if player then
 		targeterName = player.name
-		if player.cheat_mode == true then
+		--[[if player.cheat_mode == true then
 			cannonNum = "Cheat"
 			script.on_nth_tick(60, process_60_ticks)
-		end
+		end]]
 	end
 	if cannonNum == 0 then
 		if player then
@@ -285,10 +285,10 @@ function targetIonCannon(force, position, surface, player)
 				player.play_sound({path = "ion-cannon-klaxon"})
 			end
 		end
-		if not player or not player.cheat_mode then
+		--if not player or not player.cheat_mode then
 			global.forces_ion_cannon_table[force.name][cannonNum][1] = settings.global["ion-cannon-cooldown-seconds"].value
 			global.forces_ion_cannon_table[force.name][cannonNum][2] = 0
-		end
+		--end
 		if player then
 			player.print({"targeting-ion-cannon" , cannonNum})
 			for i, p in pairs(player.force.connected_players) do
@@ -375,9 +375,10 @@ script.on_event(c_on_pre_build, function(event)
 	local player = game.players[event.player_index]
 	if isHolding({name = "ion-cannon-targeter", count = 1}, player) and player.force.is_chunk_charted(player.surface, Chunk.from_position(event.position)) then
 		targetIonCannon(player.force, event.position, player.surface, player)
-		player.cursor_stack.clear()
+		--player.cursor_stack.clear()
 		global.holding_targeter[event.player_index] = true
-		player.cursor_stack.set_stack({name = "ion-cannon-targeter", count = 1})
+		--player.cursor_stack.set_stack({name = "ion-cannon-targeter", count = 1})
+		--clearing and then setting the stack seems to destroy the item as you put it away, not sure why this is here
 	end
 end)
 
