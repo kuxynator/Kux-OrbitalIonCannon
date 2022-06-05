@@ -8,6 +8,7 @@ data:extend({
 		subgroup = "capsule",
 		order = "c[target]",
 		stack_size = 1,
+		flags = {"not-stackable"},
 	}
 })
 
@@ -38,7 +39,7 @@ ion_cannon_targeter.name = "ion-cannon-targeter"
 ion_cannon_targeter.icon = ModPath.."graphics/crosshairs64.png"
 ion_cannon_targeter.icon_size = 64
 ion_cannon_targeter.icon_mipmaps = 0
-ion_cannon_targeter.flags = {"placeable-off-grid", "not-on-map"}
+ion_cannon_targeter.flags = {--[["placeable-off-grid",]] "not-on-map"} --"placeable-off-grid" prevents placement via the map. TODO: verify
 ion_cannon_targeter.collision_mask = {}
 ion_cannon_targeter.max_health = 1
 ion_cannon_targeter.inventory_size = 0
