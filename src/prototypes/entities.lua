@@ -187,7 +187,7 @@ data:extend({
 		{
 			{
 				filename = ModPath.."sound/Klaxon.ogg",
-				volume = 0.75
+				volume = 1.0
 			},
 		},
 	},
@@ -303,7 +303,7 @@ data:extend({
 		{
 			{
 				filename = ModPath.."sound/OrbitalIonCannon.ogg",
-				volume = 2.0
+				volume = 1.4
 			},
 		},
 		created_effect =
@@ -330,7 +330,7 @@ data:extend({
 		}
 	}
 })
-
+--TODO make bigger
 local yuge_crater = util.table.deepcopy(data.raw["corpse"]["small-scorchmark"])
 
 yuge_crater.name = "enormous-scorchmark"
@@ -340,11 +340,12 @@ yuge_crater.animation = {
 	height = 90,
 	frame_count = 1,
 	direction_count = 1,
-	filename = "__base__/graphics/entity/scorchmark/small-scorchmark.png"
+	filename = "__base__/graphics/entity/scorchmark/big-scorchmark.png"
 }
-yuge_crater.animation.scale = settings.startup["ion-cannon-radius"].value / 4
-yuge_crater.ground_patch.sheet.scale = settings.startup["ion-cannon-radius"].value / 4
-yuge_crater.ground_patch_higher.sheet.scale = settings.startup["ion-cannon-radius"].value / 4,
+yuge_crater.animation.scale = settings.startup["ion-cannon-radius"].value --/ 4
+yuge_crater.ground_patch.sheet.scale = settings.startup["ion-cannon-radius"].value --/ 4
+yuge_crater.ground_patch_higher.sheet.scale = settings.startup["ion-cannon-radius"].value --/ 4
+,
 
 data:extend({yuge_crater})
 

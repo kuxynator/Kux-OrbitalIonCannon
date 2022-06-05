@@ -68,7 +68,7 @@ this.initialize = function()
 
 	global.goToFull = global.goToFull or {}
 	global.markers = global.markers or {}
-	global.holding_targeter = global.holding_targeter or {}
+	--global.holding_targeter = global.holding_targeter or {} --MAV This doesn't do anything that makes sense, getting rid of it. If necessary can be replaced with isHolding()
 	global.klaxonTick = global.klaxonTick or 0
 	global.auto_tick = global.auto_tick or 0
 	global.readyTick = {}
@@ -125,16 +125,15 @@ script.on_event(defines.events.on_forces_merging, function(event)
 	-- end
 end)
 
-script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
+--why we should open the GUI always? KUX MODIFICATION
+--[[script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
 	if event.player_index then
-		--[[ why we should open the GUI always? KUX MODIFICATION
 		local player = game.players[event.player_index]
 		if global.IonCannonLaunched or player.cheat_mode or player.admin then
 			open_GUI(player)
 		end
-	]]--
 	end
-end)
+end)]]
 
 script.on_event("ion-cannon-hotkey", function(event)
 	local player = game.players[event.player_index]
@@ -152,22 +151,21 @@ end)
 script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
 	local player = game.players[event.player_index]
 	if isHolding({name = "ion-cannon-targeter", count = 1}, player) then
-		if player.character then
-			if not Permissions.hasPermission(player.index) then
-				player.print({"ion-permission-denied"})
-				playSoundForPlayer("unable-to-comply", player)
-				if Version.baseVersionGreaterOrEqual1d1() then
-					player.clear_cursor() --COMPATIBILITY 1.1
-				else
-					player.clean_cursor() --Factorio < 1.1
-				end
+		if player.character and not Permissions.hasPermission(player.index) then
+			player.print({"ion-permission-denied"})
+			playSoundForPlayer("unable-to-comply", player)
+			if Version.baseVersionGreaterOrEqual1d1() then
+				player.clear_cursor() --COMPATIBILITY 1.1
+			else
+				player.clean_cursor() --Factorio < 1.1
 			end
-		end
-		if (player.cheat_mode or (#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) and not global.holding_targeter[index] then
+			--global.holding_targeter[player.index] = false
+		elseif (--[[player.cheat_mode or ]](#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) and not global.holding_targeter[player.index]
+		then
 			playSoundForPlayer("select-target", player)
 		end
-	else
-		global.holding_targeter[player.index] = false
+	--else
+		--holding_targeter[player.index] = false
 	end
 end)
 
@@ -230,16 +228,21 @@ function isIonCannonReady(force)
 	return found
 end
 
+--TODO add debounce to prevent overlapping sounds
 function playSoundForPlayer(sound, player)
 	if settings.get_player_settings(player)["ion-cannon-play-voices"].value then
 		local voice = settings.get_player_settings(player)["ion-cannon-voice-style"].value
-		player.play_sound({path = sound .. "-" .. voice})
+		player.play_sound({path = sound .. "-" .. voice, volume_modifier = settings.get_player_settings(player)["ion-cannon-voice-volume"].value / 100})
 	end
 end
 
 function isHolding(stack, player)
 	local holding = player.cursor_stack
 	if holding and holding.valid_for_read and holding.name == stack.name and holding.count >= stack.count then
+		return true
+	--"crafting" an item in SE remote view doesn't craft the item but instead puts a ghost of it into the cursor
+	--Checking for cheat mode is a simple alternative to calling an SE remote function to check if the remote view is active
+	elseif player.cheat_mode and player.cursor_ghost and player.cursor_ghost.name == stack.name then
 		return true
 	end
 	return false
@@ -282,7 +285,7 @@ function targetIonCannon(force, position, surface, player)
 		for i, player in pairs(game.connected_players) do
 			if settings.get_player_settings(player)["ion-cannon-play-klaxon"].value and global.klaxonTick < current_tick then
 				global.klaxonTick = current_tick + 60
-				player.play_sound({path = "ion-cannon-klaxon"})
+				player.play_sound({path = "ion-cannon-klaxon", volume_modifier = settings.get_player_settings(player)["ion-cannon-klaxon-volume"].value / 100})
 			end
 		end
 		--if not player or not player.cheat_mode then
@@ -339,6 +342,25 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 	end
 end)
 
+local c_on_pre_build = defines.events.on_pre_build --COMPATIBILITY 1.1 'on_put_item' renamed to 'on_pre_build'
+if not c_on_pre_build then c_on_pre_build = defines.events.on_put_item end
+
+script.on_event(c_on_pre_build, function(event)
+	local current_tick = event.tick
+	if global.tick and global.tick > current_tick then
+		return
+	end
+	global.tick = current_tick + 10
+	local player = game.players[event.player_index]
+	if isHolding({name = "ion-cannon-targeter", count = 1}, player) and player.force.is_chunk_charted(player.surface, Chunk.from_position(event.position)) then
+		targetIonCannon(player.force, event.position, player.surface, player)
+		--player.cursor_stack.clear()
+		--global.holding_targeter[event.player_index] = true
+		--player.cursor_stack.set_stack({name = "ion-cannon-targeter", count = 1})
+		--clearing and then setting the stack seems to destroy the item as you put it away, not sure why this is here
+	end
+end)
+
 script.on_event(defines.events.on_built_entity, function(event)
 	local entity = event.created_entity
 	if entity.name == "ion-cannon-targeter" then
@@ -363,24 +385,6 @@ script.on_event(defines.events.on_trigger_created_entity, function(event)
 	end
 end)
 
-local c_on_pre_build = defines.events.on_pre_build --COMPATIBILITY 1.1 'on_put_item' renamed to 'on_pre_build'
-if not c_on_pre_build then c_on_pre_build = defines.events.on_put_item end
-
-script.on_event(c_on_pre_build, function(event)
-	local current_tick = event.tick
-	if global.tick and global.tick > current_tick then
-		return
-	end
-	global.tick = current_tick + 10
-	local player = game.players[event.player_index]
-	if isHolding({name = "ion-cannon-targeter", count = 1}, player) and player.force.is_chunk_charted(player.surface, Chunk.from_position(event.position)) then
-		targetIonCannon(player.force, event.position, player.surface, player)
-		--player.cursor_stack.clear()
-		global.holding_targeter[event.player_index] = true
-		--player.cursor_stack.set_stack({name = "ion-cannon-targeter", count = 1})
-		--clearing and then setting the stack seems to destroy the item as you put it away, not sure why this is here
-	end
-end)
 
 ModGui.initEvents()
 
@@ -394,8 +398,12 @@ local function give_shortcut_item(player, prototype_name)
 		else
 			cc = player.clean_cursor() --Factorio < 1.1
 		end
-
-		player.cursor_stack.set_stack({name = prototype_name})
+		if remote.interfaces["space-exploration"] and remote.call("space-exploration", "remote_view_is_active", {player=player}) then
+			player.cursor_ghost = game.item_prototypes[prototype_name]
+		else
+			player.cursor_stack.set_stack({name = prototype_name}) --Warining: this will allow the player to obtain infinite remotes
+			player.get_main_inventory().remove({name = prototype_name, count = 1})
+		end
 	end
 end
 

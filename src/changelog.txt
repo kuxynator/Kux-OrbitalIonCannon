@@ -2,7 +2,7 @@
 Version: 2.2.1
 Date: 2021-07-07
   Bugfixes:
-    - fix chancelog. Its time that Wube supports tab chars!
+    - fix changelog. Its time that Wube supports tab chars!
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
 Date: 2021-07-07
