@@ -4,9 +4,9 @@ data.raw.item["ion-cannon-targeter"].flags = data.raw.item["ion-cannon-targeter"
 --table.insert(data.raw.item["ion-cannon-targeter"].flags, "only-in-cursor")
 if newBaseVersion then table.insert(data.raw.item["ion-cannon-targeter"].flags, "spawnable") end
 
-local color = function (category, color, text)
+--[[local color = function (category, color, text)
 	
-end
+end]]
 
 data:extend({
     {
