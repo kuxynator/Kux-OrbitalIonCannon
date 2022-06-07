@@ -228,6 +228,30 @@ function isIonCannonReady(force)
 	return found
 end
 
+function countTotalIonCannons(force)
+	return #global.forces_ion_cannon_table[force.name]
+end
+
+--Given a surface, counts the number of orbiting ion cannons. If the surface is an orbit, it counts the number of cannons attached to the associated planet instead
+function countOrbitingIonCannons(force, surface)
+	local surfaceName = surface.name
+	local suffix=" Orbit"
+	if surfaceName == "Nauvis Orbit" then
+		surfaceName = "nauvis"
+	elseif #surfaceName > #suffix and string.sub(surfaceName, -#suffix) == suffix then
+		local sn = string.sub(surfaceName, 1, #surfaceName-#suffix)
+		--if game.surfaces[surfaceName] then surfaceName = sn end
+		surfaceName = sn
+	end
+	local total = 0
+	for i = 1, #global.forces_ion_cannon_table[force.name] do
+		if surfaceName == global.forces_ion_cannon_table[force.name][i][3] then
+			total = total + 1
+		end
+	end
+	return total
+end
+
 --TODO add debounce to prevent overlapping sounds
 function playSoundForPlayer(sound, player)
 	if settings.get_player_settings(player)["ion-cannon-play-voices"].value then
@@ -242,10 +266,27 @@ function isHolding(stack, player)
 		return true
 	--"crafting" an item in SE remote view doesn't craft the item but instead puts a ghost of it into the cursor
 	--Checking for cheat mode is a simple alternative to calling an SE remote function to check if the remote view is active
-	elseif player.cheat_mode and player.cursor_ghost and player.cursor_ghost.name == stack.name then
+	elseif --[[player.cheat_mode and]] player.cursor_ghost and player.cursor_ghost.name == stack.name then
 		return true
 	end
 	return false
+end
+
+--Adds an ion cannon. Ensures Ion cannons aren't added in orbit.
+--Returns the name of the surface the cannon was added to.
+function addIonCannon(force, surface)
+	local surfaceName = surface.name
+	local suffix=" Orbit"
+	if surfaceName == "Nauvis Orbit" then
+		surfaceName = "nauvis"
+	elseif #surfaceName > #suffix and string.sub(surfaceName, -#suffix) == suffix then
+		local sn = string.sub(surfaceName, 1, #surfaceName-#suffix)
+		--if game.surfaces[surfaceName] then surfaceName = sn end
+		surfaceName = sn
+	end
+	table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+	global.IonCannonLaunched = true
+	return surfaceName
 end
 
 function targetIonCannon(force, position, surface, player)
@@ -314,17 +355,10 @@ end
 script.on_event(defines.events.on_rocket_launched, function(event)
 	local force = event.rocket.force
 	local surfaceName = event.rocket_silo.surface.name
-	local suffix=" Orbit"
-	if surfaceName == "Nauvis Orbit" then
-		surfaceName = "nauvis"
-	elseif #surfaceName > #suffix and string.sub(surfaceName, -#suffix) == suffix then
-		local sn = string.sub(surfaceName, 1, #surfaceName-#suffix)
-		--if game.surfaces[surfaceName] then surfaceName = sn end
-		surfaceName = sn
-	end
+	
 	if event.rocket.get_item_count("orbital-ion-cannon") > 0 then
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
-		global.IonCannonLaunched = true
+		addIonCannon(force, event.rocket_silo.surface)
+		
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do
 			init_GUI(player)
@@ -337,7 +371,7 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 			force.print({"third-help"})
 		else
 			force.print({"congratulations-additional"})
-			force.print({"ion-cannons-in-orbit" , #global.forces_ion_cannon_table[force.name]})
+			force.print({"ion-cannons-in-orbit", surfaceName, countOrbitingIonCannons(force, event.rocket_silo.surface)})
 		end
 	end
 end)
@@ -398,12 +432,12 @@ local function give_shortcut_item(player, prototype_name)
 		else
 			cc = player.clean_cursor() --Factorio < 1.1
 		end
-		if remote.interfaces["space-exploration"] and remote.call("space-exploration", "remote_view_is_active", {player=player}) then
+		--if remote.interfaces["space-exploration"] and remote.call("space-exploration", "remote_view_is_active", {player=player}) then
 			player.cursor_ghost = game.item_prototypes[prototype_name]
-		else
-			player.cursor_stack.set_stack({name = prototype_name}) --Warining: this will allow the player to obtain infinite remotes
-			player.get_main_inventory().remove({name = prototype_name, count = 1})
-		end
+		--else
+		--	player.cursor_stack.set_stack({name = prototype_name}) --Warining: this will allow the player to obtain infinite remotes
+		--	player.get_main_inventory().remove({name = prototype_name, count = 1})
+		--end
 	end
 end
 
