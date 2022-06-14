@@ -3,3 +3,5 @@
 /Kux-*
 src/settings.lua.bak
 *.bak
+*/.vscode
+*.cmd
