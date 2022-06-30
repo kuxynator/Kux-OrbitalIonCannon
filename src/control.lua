@@ -137,7 +137,7 @@ end)]]
 
 script.on_event("ion-cannon-hotkey", function(event)
 	local player = game.players[event.player_index]
-	if global.IonCannonLaunched or --[[player.cheat_mode or]] player.admin then --SE nav sat enables cheat mode, so we can't rely on that
+	if global.IonCannonLaunched or player.admin then
 		open_GUI(player)
 	end
 end)
@@ -160,7 +160,7 @@ script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
 				player.clean_cursor() --Factorio < 1.1
 			end
 			--global.holding_targeter[player.index] = false
-		elseif (--[[player.cheat_mode or ]](#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) and not global.holding_targeter[player.index]
+		elseif ((#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) and not global.holding_targeter[player.index]
 		then
 			playSoundForPlayer("select-target", player)
 		end
@@ -260,6 +260,7 @@ function playSoundForPlayer(sound, player)
 	end
 end
 
+--Returns true if the payer is holding the specified stack or a ghost of it
 function isHolding(stack, player)
 	local holding = player.cursor_stack
 	if holding and holding.valid_for_read and holding.name == stack.name and holding.count >= stack.count then
@@ -302,6 +303,7 @@ function targetIonCannon(force, position, surface, player)
 
 	if player then
 		targeterName = player.name
+		--TODO: Add alternate cheat cannon firing, and/or add a cooldown reset button to the cheat menu
 		--[[if player.cheat_mode == true then
 			cannonNum = "Cheat"
 			script.on_nth_tick(60, process_60_ticks)
@@ -354,10 +356,9 @@ end
 -- player_index :: uint (optional): The player that is riding the rocket, if any.
 script.on_event(defines.events.on_rocket_launched, function(event)
 	local force = event.rocket.force
-	local surfaceName = event.rocket_silo.surface.name
 	
 	if event.rocket.get_item_count("orbital-ion-cannon") > 0 then
-		addIonCannon(force, event.rocket_silo.surface)
+		local surfaceName = addIonCannon(force, event.rocket_silo.surface)
 		
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do

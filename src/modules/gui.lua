@@ -118,20 +118,6 @@ function destroyUiElement(player, name)
 	element.parent[name].destroy()
 end
 
---[[function replaceOrCreateUiElement(player, name)
-	local element = findUiElementByName(player, name, false)
-
-	local definition = UiElementDefinitions[name]
-	if not definition then error("Definition not found. Name: '"..name.."'") end
-	if element then
-		local idx = element.get_index_in_parent()
-		definition["index"]=idx
-		element.destroy()
-	end
-	definition["name"]=name
-	return findUiElementByName(player, name, true)
-end]]
-
 function init_GUI(player)
 	--print("init_GUI")
 	--TODO is called every 60 seconds!
@@ -271,22 +257,6 @@ function update_GUI(player)
 		end
 	end
 end
-
---[[function createFullCannonTable(player)
-	local statsFrame = player.gui.left["ion-cannon-stats"]
-	local forceName = player.force.name
-	local cannonTable = statsFrame.add{type = "table", column_count = 3, name = "ion-cannon-table"}
-	for i = 1, #global.forces_ion_cannon_table[forceName] do
-		cannonTable.add{type = "label", caption = {"ion-cannon-num", i}}
-		if global.forces_ion_cannon_table[forceName][i][2] == 1 then
-			cannonTable.add{type = "label", caption = {"ready"}}
-		else
-			cannonTable.add{type = "label", caption = {"cooldown", global.forces_ion_cannon_table[forceName][i][1]}}
-		end
-		cannonTable.add{type = "label", caption = "["..tostring(global.forces_ion_cannon_table[forceName][i][3]).."]"}
-	end
-	return cannonTable
-end]]
 
 function createFullCannonTableFiltered(player)
 	local statsFrame = player.gui.left["ion-cannon-stats"]
