@@ -1,8 +1,21 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.0
+Date: 2022-6-10
+  Features:
+    - Volume settings for voices and the klaxon
+    - Targeting remote is now fully functional in Space Exploration's satellite view, however it cannot yet be kept in the satellite inventory
+  Bugfixes:
+    - Targeting remote item no longer vanishes when removed from cursor
+    - Targeting remote shortcut will not appear until the technology is researched
+    - Correct number of orbiting ion cannons is now displayed whenever it is printed to chat
+    - Fixed targeting remote collisions being affected by other mods, it should now be properly usable anywhere
+    - UI should no longer automatically appear before a cannon has been launched
+    - Fixed Ion Cannon crafting time, it will now be 60 seconds by default
+---------------------------------------------------------------------------------------------------
 Version: 2.2.1
 Date: 2021-07-07
   Bugfixes:
-    - fix chancelog. Its time that Wube supports tab chars!
+    - fix changelog. Its time that Wube supports tab chars!
 ---------------------------------------------------------------------------------------------------
 Version: 2.2.0
 Date: 2021-07-07
@@ -45,7 +58,7 @@ Date: 2021-01-28
 Version: 2.1.7
 Date: 2021-01-22
   Bugfixes:
-    - backward compatibily for 1.0
+    - backwards compatibility for 1.0
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.6
 Date: 2021-01-13
@@ -81,7 +94,7 @@ Version: 2.1.1
 Date: 2021-01-05
   Changes:
     - Settings for an early recipe (Space Exploration)
-    - Workourand for Rampant Arsenal technolgy tree changes
+    - Workaround for Rampant Arsenal technology tree changes
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.0
 Date: 2020-12-18

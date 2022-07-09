@@ -14,10 +14,10 @@ data:extend({
 	{
 		type = "recipe",
 		name = "orbital-ion-cannon",
-		energy_required = 60,
 		normal =
 		{
 			enabled = false,
+			energy_required = 60,
 			ingredients =
 			{
 				{"low-density-structure", 100},
@@ -34,6 +34,7 @@ data:extend({
 		expensive =
 		{
 			enabled = false,
+			energy_required = 60,
 			ingredients =
 			{
 				{"low-density-structure", 250},
@@ -50,6 +51,7 @@ data:extend({
 	},
 })
 
+--TODO update to not use array indices
 if data.raw["item"]["advanced-processing-unit"] and settings.startup["ion-cannon-bob-updates"].value then
 	data.raw["recipe"]["orbital-ion-cannon"].normal.ingredients[5] = {"advanced-processing-unit", 200}
 	data.raw["recipe"]["orbital-ion-cannon"].expensive.ingredients[5] = {"advanced-processing-unit", 500}

@@ -1,5 +1,7 @@
 ﻿/.vs
-/*.zip
+*.zip
 /Kux-*
 src/settings.lua.bak
 *.bak
+*/.vscode
+*.cmd
