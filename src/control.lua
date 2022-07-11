@@ -160,7 +160,7 @@ script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
 				player.clean_cursor() --Factorio < 1.1
 			end
 			--global.holding_targeter[player.index] = false
-		elseif ((#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) and not global.holding_targeter[player.index]
+		elseif ((#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) --and not global.holding_targeter[player.index]
 		then
 			playSoundForPlayer("select-target", player)
 		end
@@ -414,6 +414,7 @@ script.on_event(defines.events.on_trigger_created_entity, function(event)
 	local created_entity = event.entity
 	if created_entity.name == "ion-cannon-explosion" then
 		script.raise_event(when_ion_cannon_fired, {surface = created_entity.surface, position = created_entity.position, radius = settings.startup["ion-cannon-radius"].value})		-- Passes event.surface, event.position, and event.radius
+		--TODO: Is this charting the chunk for every force in the game? wtf?
 		for i, force in pairs(game.forces) do
 			force.chart(created_entity.surface, Position.expand_to_area(created_entity.position, 1))
 		end
