@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
-Version 2.3.1
+Version: 2.3.1
 Date: 2022-7-11
   Bugfixes:
     - Fixed bug caused by putting the targeter into the cursor while cannons are ready
