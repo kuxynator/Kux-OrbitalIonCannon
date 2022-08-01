@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.2
+Date: 2022-7-31
+  Bugfixes:
+    - Cleaned up research costs
+    - Fixed Early Research setting
+    - Update research for Space Exploration 0.6
+---------------------------------------------------------------------------------------------------
 Version: 2.3.1
 Date: 2022-7-11
   Bugfixes:

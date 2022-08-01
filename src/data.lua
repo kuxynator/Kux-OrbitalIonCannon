@@ -8,7 +8,7 @@ require "prototypes.orbital-ion-cannon"
 require("prototypes.items")
 require("prototypes.entities")
 require("prototypes.recipes")
-require("prototypes.technologies").init()
+require("prototypes.technologies")
 require("prototypes.announcers")
 require("prototypes.styles")
 require("prototypes.shortcuts")

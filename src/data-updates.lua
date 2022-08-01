@@ -1,7 +1,5 @@
 LoadState="data-updates"
 
-require("prototypes.technologies").updates()
-
 -- if data.raw["tool"]["science-pack-4"] and settings.startup["ion-cannon-bob-updates"].value then
 	-- data.raw["technology"]["orbital-ion-cannon"].unit.ingredients[5] = {"science-pack-4", 2}
 	-- data.raw["technology"]["auto-targeting"].unit.ingredients[5] = {"science-pack-4", 1}
