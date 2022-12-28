@@ -154,7 +154,7 @@ data:extend({
 		name = "ion-cannon-ready-ticks",
 		setting_type = "runtime-per-user",
 		order = "d",
-		default_value = 300,
+		default_value = 360,
 		minimum_value = 1
 	},
 	{

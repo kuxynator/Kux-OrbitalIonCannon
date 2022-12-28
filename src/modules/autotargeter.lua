@@ -1,15 +1,18 @@
 require "modules.tools"
 local Area =  require("__stdlib__/stdlib/area/area") -- required for Chunk
 local Chunk = require("__stdlib__/stdlib/area/chunk")
+require "modules.ion-cannon-table"
+
+--local turretBlacklist = {"ion-cannon-targeter", "kr-tesla-coil-turret"}
 
 function findNestNear(entity, chunk_position)
 	local search = Chunk.to_area(chunk_position)
-	local spawners = entity.surface.find_entities_filtered{area = search, type = "unit-spawner"}
+	local spawners = entity.surface.find_entities_filtered{area = search, type = "unit-spawner", limit = 3} --limit is arbitrarily set for testing, can/should be reduced later if it doesn't cause any undesirable behavior
 	if #spawners > 0 then
 		return spawners[math.random(#spawners)]
 	end
 	if settings.global["ion-cannon-target-worms"].value then
-		local worms = entity.surface.find_entities_filtered{area = search, type = "turret"}
+		local worms = entity.surface.find_entities_filtered{area = search, type = "turret", limit = 6, collision_mask = "player-layer"} --limit is arbitrarily set for testing, can/should be reduced later if it doesn't cause any undesirable behavior
 		if #worms > 0 then
 			return worms[math.random(#worms)]
 		end
@@ -28,9 +31,9 @@ end
 
 local processQueue = function ()
 	--print("processQueue")
-	local target = global.forces_ion_cannon_table["Queue"][1]
+	local target = GetCannonTable("Queue")[1]
 	if not target or not target.valid then
-		table.remove(global.forces_ion_cannon_table["Queue"], 1)
+		table.remove(GetCannonTable("Queue"), 1)
 		return
 	end
 
@@ -43,7 +46,7 @@ local processQueue = function ()
 		local fired = targetIonCannon(force, target.position, target.surface)
 		if not fired then return false end
 		alertCannonFired(force, target, {"ion-cannon-target-location", true, target.position.x, target.position.y, "Auto"});
-		table.remove(global.forces_ion_cannon_table["Queue"], 1)
+		table.remove(GetCannonTable("Queue"), 1)
 		return true
 	end
 
@@ -58,7 +61,7 @@ end
 -- area :: BoundingBox: Area of the scanned chunk.
 script.on_event(defines.events.on_sector_scanned, function(event)
 	--print("on_sector_scanned",serpent.line(event.chunk_position), serpent.line(event.area))
-	if #global.forces_ion_cannon_table["Queue"] > 0 then
+	if #GetCannonTable("Queue") > 0 then
 		processQueue();
 	end
 
@@ -91,7 +94,7 @@ script.on_event(defines.events.on_biter_base_built, function(e)
 	for _, force in pairs(game.forces) do
 		if force.technologies["auto-targeting"].researched == true and force.is_chunk_visible(biterBase.surface, chunk) then
 			--print("insert biter base to Queue")
-			table.insert(global.forces_ion_cannon_table["Queue"], biterBase)
+			table.insert(GetCannonTable("Queue"), biterBase)
 			return
 		end
 	end
