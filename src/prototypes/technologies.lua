@@ -88,15 +88,17 @@
 		},
 	})
 
-	if data.raw["item"]["bob-laser-turret-5"] and settings.startup["ion-cannon-bob-updates"].value then
-		data.raw["technology"]["orbital-ion-cannon"].prerequisites = {"rocket-silo", "energy-weapons-damage-6", "bob-laser-turrets-5"}
+if settings.startup["ion-cannon-bob-updates"].value then
+	if data.raw["technology"]["energy-weapons-damage-6"] and data.raw["technology"]["bob-laser-turrets-5"] and data.raw["item"]["bob-laser-turret-5"] then
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "energy-weapons-damage-6")
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "bob-laser-turrets-5")
 	end
 
-	if data.raw["item"]["fast-accumulator-3"] and data.raw["item"]["solar-panel-large-3"] and settings.startup["ion-cannon-bob-updates"].value then
-		data.raw["technology"]["orbital-ion-cannon"].prerequisites = {"rocket-silo", "energy-weapons-damage-6",	"bob-solar-energy-4", "bob-electric-energy-accumulators-4"}
+	if data.raw["item"]["fast-accumulator-3"] and data.raw["technology"]["bob-electric-energy-accumulators-3"] then
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "bob-electric-energy-accumulators-3")
 	end
 
-	if data.raw["item"]["fast-accumulator-3"] and data.raw["item"]["solar-panel-large-3"] and data.raw["item"]["bob-laser-turret-5"] and settings.startup["ion-cannon-bob-updates"].value then
-		data.raw["technology"]["orbital-ion-cannon"].prerequisites = {"rocket-silo", "energy-weapons-damage-6", "bob-solar-energy-4", "bob-electric-energy-accumulators-4", "bob-laser-turrets-5"}
+	if data.raw["item"]["solar-panel-large-3"] and data.raw["technology"]["bob-solar-energy-3"] then
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "bob-solar-energy-3")
 	end
-
+end
