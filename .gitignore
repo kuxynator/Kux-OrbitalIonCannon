@@ -1,4 +1,5 @@
 ﻿/.vs
+/.build
 /*.zip
 /Kux-*
 src/settings.lua.bak
