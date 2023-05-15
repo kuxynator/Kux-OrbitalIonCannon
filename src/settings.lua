@@ -117,6 +117,15 @@ data:extend({
 		default_value = true
 	},
 	{
+		type = "int-setting",
+		name = "ion-cannon-voice-volume",
+		setting_type = "runtime-per-user",
+		order = "aa",
+		min_value = 0,
+		default_value = 70,
+		max_value = 100,
+	},
+	{
 		type = "string-setting",
 		name = "ion-cannon-voice-style",
 		setting_type = "runtime-per-user",
@@ -133,10 +142,19 @@ data:extend({
 	},
 	{
 		type = "int-setting",
+		name = "ion-cannon-klaxon-volume",
+		setting_type = "runtime-per-user",
+		order = "ca",
+		min_value = 0,
+		default_value = 70,
+		max_value = 100,
+	},
+	{
+		type = "int-setting",
 		name = "ion-cannon-ready-ticks",
 		setting_type = "runtime-per-user",
 		order = "d",
-		default_value = 300,
+		default_value = 360,
 		minimum_value = 1
 	},
 	{

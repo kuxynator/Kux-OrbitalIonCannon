@@ -7,6 +7,7 @@ local Position = require("__stdlib__/stdlib/area/position")
 require "modules.autotargeter"
 require "modules.gui"
 require "modules.Permissions"
+require "modules.ion-cannon-table"
 
 local fLog = function (functionName)
 	print("control."..functionName)
@@ -68,7 +69,7 @@ this.initialize = function()
 
 	global.goToFull = global.goToFull or {}
 	global.markers = global.markers or {}
-	global.holding_targeter = global.holding_targeter or {}
+	--global.holding_targeter = global.holding_targeter or {} --MAV This doesn't do anything that makes sense, getting rid of it. If necessary can be replaced with isHolding()
 	global.klaxonTick = global.klaxonTick or 0
 	global.auto_tick = global.auto_tick or 0
 	global.readyTick = {}
@@ -81,7 +82,7 @@ this.initialize = function()
 	if not global.permissions then Permissions.initialize() end
 	for _, player in pairs(game.players) do
 		global.readyTick[player.index] = 0
-		global.forces_ion_cannon_table[player.force.name] = global.forces_ion_cannon_table[player.force.name] or {}
+		global.forces_ion_cannon_table[player.force.name] = GetCannonTableFromForce(player.force) or {}
 		if global.goToFull[player.index] == nil then
 			global.goToFull[player.index] = true
 		end
@@ -94,7 +95,7 @@ this.initialize = function()
 	end
 	for i, force in pairs(game.forces) do
 		force.reset_recipes()
-		if global.forces_ion_cannon_table[force.name] and #global.forces_ion_cannon_table[force.name] > 0 then
+		if GetCannonTableFromForce(force) and #GetCannonTableFromForce(force) > 0 then
 			global.IonCannonLaunched = true
 			script.on_nth_tick(60, process_60_ticks)
 		end
@@ -114,7 +115,7 @@ script.on_event(defines.events.on_force_created, function(event)
 	if not global.forces_ion_cannon_table then
 		this.initialize()
 	end
-	global.forces_ion_cannon_table[event.force.name] = {}
+	NewCannonTableForForce(event.force)
 end)
 
 script.on_event(defines.events.on_forces_merging, function(event)
@@ -125,20 +126,19 @@ script.on_event(defines.events.on_forces_merging, function(event)
 	-- end
 end)
 
-script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
+--why we should open the GUI always? KUX MODIFICATION
+--[[script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
 	if event.player_index then
-		--[[ why we should open the GUI always? KUX MODIFICATION
 		local player = game.players[event.player_index]
 		if global.IonCannonLaunched or player.cheat_mode or player.admin then
 			open_GUI(player)
 		end
-	]]--
 	end
-end)
+end)]]
 
 script.on_event("ion-cannon-hotkey", function(event)
 	local player = game.players[event.player_index]
-	if global.IonCannonLaunched or player.cheat_mode or player.admin then
+	if global.IonCannonLaunched or player.admin then
 		open_GUI(player)
 	end
 end)
@@ -152,22 +152,21 @@ end)
 script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
 	local player = game.players[event.player_index]
 	if isHolding({name = "ion-cannon-targeter", count = 1}, player) then
-		if player.character then
-			if not Permissions.hasPermission(player.index) then
-				player.print({"ion-permission-denied"})
-				playSoundForPlayer("unable-to-comply", player)
-				if Version.baseVersionGreaterOrEqual1d1() then
-					player.clear_cursor() --COMPATIBILITY 1.1
-				else
-					player.clean_cursor() --Factorio < 1.1
-				end
+		if player.character and not Permissions.hasPermission(player.index) then
+			player.print({"ion-permission-denied"})
+			playSoundForPlayer("unable-to-comply", player)
+			if Version.baseVersionGreaterOrEqual1d1() then
+				player.clear_cursor() --COMPATIBILITY 1.1
+			else
+				player.clean_cursor() --Factorio < 1.1
 			end
-		end
-		if (player.cheat_mode or (#global.forces_ion_cannon_table[player.force.name] > 0 and not isAllIonCannonOnCooldown(player))) and not global.holding_targeter[index] then
+			--global.holding_targeter[player.index] = false
+		elseif ((#GetCannonTableFromForce(player.force) > 0 and not isAllIonCannonOnCooldown(player))) --and not global.holding_targeter[player.index]
+		then
 			playSoundForPlayer("select-target", player)
 		end
-	else
-		global.holding_targeter[player.index] = false
+	--else
+		--holding_targeter[player.index] = false
 	end
 end)
 
@@ -184,7 +183,7 @@ function process_60_ticks(NthTickEvent)
 	end
 	ReduceIonCannonCooldowns()
 	for i, force in pairs(game.forces) do
-		if global.forces_ion_cannon_table[force.name] and isIonCannonReady(force) then
+		if GetCannonTableFromForce(force) and isIonCannonReady(force) then
 			for i, player in pairs(force.connected_players) do
 				if global.readyTick[player.index] < current_tick then
 					global.readyTick[player.index] = current_tick + settings.get_player_settings(player)["ion-cannon-ready-ticks"].value
@@ -198,12 +197,15 @@ function process_60_ticks(NthTickEvent)
 	end
 end
 
-function ReduceIonCannonCooldowns()
+--Reduce cannon cooldowns. Time parameter is optional, defaults to 1
+function ReduceIonCannonCooldowns(time)
+	time = time or 1;
 	for _, force in pairs(game.forces) do
-		if global.forces_ion_cannon_table[force.name] then
-			for k, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
+		if GetCannonTableFromForce(force) then
+			for k, cooldown in pairs(GetCannonTableFromForce(force)) do
 				if cooldown[1] > 0 then
-					global.forces_ion_cannon_table[force.name][k][1] = global.forces_ion_cannon_table[force.name][k][1] - 1
+					GetCannonTableFromForce(force)[k][1] = GetCannonTableFromForce(force)[k][1] - time
+					if cooldown[1] < 0 then cooldown[1] = 0 end --Have to do this because the clowns that wrote this code check for if it equals 0 instead of if it's less than 0
 				end
 			end
 		end
@@ -211,7 +213,7 @@ function ReduceIonCannonCooldowns()
 end
 
 function isAllIonCannonOnCooldown(player)
-	for i, cooldown in pairs(global.forces_ion_cannon_table[player.force.name]) do
+	for i, cooldown in pairs(GetCannonTableFromForce(player.force)) do
 		if cooldown[2] == 1 then
 			return false
 		end
@@ -221,7 +223,7 @@ end
 
 function isIonCannonReady(force)
 	local found = false
-	for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
+	for i, cooldown in pairs(GetCannonTableFromForce(force)) do
 		if cooldown[1] == 0 and cooldown[2] == 0 then
 			cooldown[2] = 1
 			found = true
@@ -230,26 +232,80 @@ function isIonCannonReady(force)
 	return found
 end
 
+function countTotalIonCannons(force)
+	return #GetCannonTableFromForce(force)
+end
+
+--Given a surface, counts the number of orbiting ion cannons. If the surface is an orbit, it counts the number of cannons attached to the associated planet instead
+function countOrbitingIonCannons(force, surface)
+	local surfaceName = surface.name
+	local suffix=" Orbit"
+	if surfaceName == "Nauvis Orbit" then
+		surfaceName = "nauvis"
+	elseif #surfaceName > #suffix and string.sub(surfaceName, -#suffix) == suffix then
+		local sn = string.sub(surfaceName, 1, #surfaceName-#suffix)
+		--if game.surfaces[surfaceName] then surfaceName = sn end
+		surfaceName = sn
+	end
+	local total = 0
+	for i = 1, #GetCannonTableFromForce(force) do
+		if surfaceName == GetCannonTableFromForce(force)[i][3] then
+			total = total + 1
+		end
+	end
+	return total
+end
+
+--TODO add debounce to prevent overlapping sounds
 function playSoundForPlayer(sound, player)
 	if settings.get_player_settings(player)["ion-cannon-play-voices"].value then
 		local voice = settings.get_player_settings(player)["ion-cannon-voice-style"].value
-		player.play_sound({path = sound .. "-" .. voice})
+		player.play_sound({path = sound .. "-" .. voice, volume_modifier = settings.get_player_settings(player)["ion-cannon-voice-volume"].value / 100})
 	end
 end
 
+--Returns true if the payer is holding the specified stack or a ghost of it
 function isHolding(stack, player)
 	local holding = player.cursor_stack
 	if holding and holding.valid_for_read and holding.name == stack.name and holding.count >= stack.count then
+		return true
+	--"crafting" an item in SE remote view doesn't craft the item but instead puts a ghost of it into the cursor
+	--Checking for cheat mode is a simple alternative to calling an SE remote function to check if the remote view is active
+	elseif --[[player.cheat_mode and]] player.cursor_ghost and player.cursor_ghost.name == stack.name then
 		return true
 	end
 	return false
 end
 
+--Adds an ion cannon. Ensures Ion cannons aren't added in orbit.
+--Returns the name of the surface the cannon was added to.
+function addIonCannon(force, surface)
+	local surfaceName = surface.name
+	local suffix=" Orbit"
+	if surfaceName == "Nauvis Orbit" then
+		surfaceName = "nauvis"
+	elseif #surfaceName > #suffix and string.sub(surfaceName, -#suffix) == suffix then
+		local sn = string.sub(surfaceName, 1, #surfaceName-#suffix)
+		--if game.surfaces[surfaceName] then surfaceName = sn end
+		surfaceName = sn
+	end
+	table.insert(GetCannonTableFromForce(force), {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+	global.IonCannonLaunched = true
+	return surfaceName
+end
+
+--Removes an ion cannon.
+--Returns the name of the surface the cannon was removed from.
+-- function removeIonCannon(force, surface)
+-- 	local surfaceName = surface.name
+-- 	if GetCannonTableFromForce(force).size() 
+-- end
+
 function targetIonCannon(force, position, surface, player)
 	local cannonNum = 0
 	local targeterName = "Auto"
 
-	for i, cooldown in pairs(global.forces_ion_cannon_table[force.name]) do
+	for i, cooldown in pairs(GetCannonTableFromForce(force)) do
 		if cooldown[2] == 1 and cooldown[3] == surface.name then
 			cannonNum = i
 			break
@@ -258,10 +314,11 @@ function targetIonCannon(force, position, surface, player)
 
 	if player then
 		targeterName = player.name
-		if player.cheat_mode == true then
+		--TODO: Add alternate cheat cannon firing, and/or add a cooldown reset button to the cheat menu
+		--[[if player.cheat_mode == true then
 			cannonNum = "Cheat"
 			script.on_nth_tick(60, process_60_ticks)
-		end
+		end]]
 	end
 	if cannonNum == 0 then
 		if player then
@@ -282,13 +339,13 @@ function targetIonCannon(force, position, surface, player)
 		for i, player in pairs(game.connected_players) do
 			if settings.get_player_settings(player)["ion-cannon-play-klaxon"].value and global.klaxonTick < current_tick then
 				global.klaxonTick = current_tick + 60
-				player.play_sound({path = "ion-cannon-klaxon"})
+				player.play_sound({path = "ion-cannon-klaxon", volume_modifier = settings.get_player_settings(player)["ion-cannon-klaxon-volume"].value / 100})
 			end
 		end
-		if not player or not player.cheat_mode then
-			global.forces_ion_cannon_table[force.name][cannonNum][1] = settings.global["ion-cannon-cooldown-seconds"].value
-			global.forces_ion_cannon_table[force.name][cannonNum][2] = 0
-		end
+		--if not player or not player.cheat_mode then
+			GetCannonTableFromForce(force)[cannonNum][1] = settings.global["ion-cannon-cooldown-seconds"].value
+			GetCannonTableFromForce(force)[cannonNum][2] = 0
+		--end
 		if player then
 			player.print({"targeting-ion-cannon" , cannonNum})
 			for i, p in pairs(player.force.connected_players) do
@@ -310,32 +367,43 @@ end
 -- player_index :: uint (optional): The player that is riding the rocket, if any.
 script.on_event(defines.events.on_rocket_launched, function(event)
 	local force = event.rocket.force
-	local surfaceName = event.rocket_silo.surface.name
-	local suffix=" Orbit"
-	if surfaceName == "Nauvis Orbit" then
-		surfaceName = "nauvis"
-	elseif #surfaceName > #suffix and string.sub(surfaceName, -#suffix) == suffix then
-		local sn = string.sub(surfaceName, 1, #surfaceName-#suffix)
-		--if game.surfaces[surfaceName] then surfaceName = sn end
-		surfaceName = sn
-	end
+	
 	if event.rocket.get_item_count("orbital-ion-cannon") > 0 then
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
-		global.IonCannonLaunched = true
+		local surfaceName = addIonCannon(force, event.rocket_silo.surface)
+		
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do
 			init_GUI(player)
 			playSoundForPlayer("ion-cannon-charging", player)
 		end
-		if #global.forces_ion_cannon_table[force.name] == 1 then
+		if #GetCannonTableFromForce(force) == 1 then
 			force.print({"congratulations-first"})
 			force.print({"first-help"})
 			force.print({"second-help"})
 			force.print({"third-help"})
 		else
 			force.print({"congratulations-additional"})
-			force.print({"ion-cannons-in-orbit" , #global.forces_ion_cannon_table[force.name]})
+			force.print({"ion-cannons-in-orbit", surfaceName, countOrbitingIonCannons(force, event.rocket_silo.surface)})
 		end
+	end
+end)
+
+local c_on_pre_build = defines.events.on_pre_build --COMPATIBILITY 1.1 'on_put_item' renamed to 'on_pre_build'
+if not c_on_pre_build then c_on_pre_build = defines.events.on_put_item end
+
+script.on_event(c_on_pre_build, function(event)
+	local current_tick = event.tick
+	if global.tick and global.tick > current_tick then
+		return
+	end
+	global.tick = current_tick + 10
+	local player = game.players[event.player_index]
+	if isHolding({name = "ion-cannon-targeter", count = 1}, player) and player.force.is_chunk_charted(player.surface, Chunk.from_position(event.position)) then
+		targetIonCannon(player.force, event.position, player.surface, player)
+		--player.cursor_stack.clear()
+		--global.holding_targeter[event.player_index] = true
+		--player.cursor_stack.set_stack({name = "ion-cannon-targeter", count = 1})
+		--clearing and then setting the stack seems to destroy the item as you put it away, not sure why this is here
 	end
 end)
 
@@ -357,29 +425,13 @@ script.on_event(defines.events.on_trigger_created_entity, function(event)
 	local created_entity = event.entity
 	if created_entity.name == "ion-cannon-explosion" then
 		script.raise_event(when_ion_cannon_fired, {surface = created_entity.surface, position = created_entity.position, radius = settings.startup["ion-cannon-radius"].value})		-- Passes event.surface, event.position, and event.radius
+		--TODO: Is this charting the chunk for every force in the game? wtf?
 		for i, force in pairs(game.forces) do
 			force.chart(created_entity.surface, Position.expand_to_area(created_entity.position, 1))
 		end
 	end
 end)
 
-local c_on_pre_build = defines.events.on_pre_build --COMPATIBILITY 1.1 'on_put_item' renamed to 'on_pre_build'
-if not c_on_pre_build then c_on_pre_build = defines.events.on_put_item end
-
-script.on_event(c_on_pre_build, function(event)
-	local current_tick = event.tick
-	if global.tick and global.tick > current_tick then
-		return
-	end
-	global.tick = current_tick + 10
-	local player = game.players[event.player_index]
-	if isHolding({name = "ion-cannon-targeter", count = 1}, player) and player.force.is_chunk_charted(player.surface, Chunk.from_position(event.position)) then
-		targetIonCannon(player.force, event.position, player.surface, player)
-		player.cursor_stack.clear()
-		global.holding_targeter[event.player_index] = true
-		player.cursor_stack.set_stack({name = "ion-cannon-targeter", count = 1})
-	end
-end)
 
 ModGui.initEvents()
 
@@ -393,8 +445,12 @@ local function give_shortcut_item(player, prototype_name)
 		else
 			cc = player.clean_cursor() --Factorio < 1.1
 		end
-
-		player.cursor_stack.set_stack({name = prototype_name})
+		--if remote.interfaces["space-exploration"] and remote.call("space-exploration", "remote_view_is_active", {player=player}) then
+			player.cursor_ghost = game.item_prototypes[prototype_name]
+		--else
+		--	player.cursor_stack.set_stack({name = prototype_name}) --Warining: this will allow the player to obtain infinite remotes
+		--	player.get_main_inventory().remove({name = prototype_name, count = 1})
+		--end
 	end
 end
 

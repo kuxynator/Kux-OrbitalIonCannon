@@ -1,5 +1,6 @@
 require "modules.tools"
 require "modules.luaext"
+require "modules.ion-cannon-table"
 local mod_gui = require("mod-gui")
 
 UiElementDefinitions = {
@@ -42,37 +43,37 @@ local on_gui_click = function(event)
 	local player = game.players[event.element.player_index]
 	local force = player.force
 	local name = event.element.name
-	local surfaceName = player.surface.name
+	local surfaceName
 	if name == "ion-cannon-button" then
 		open_GUI(player)
 		return
 	elseif name == "add-ion-cannon" then
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+		surfaceName = addIonCannon(force, player.surface)
 		global.IonCannonLaunched = true
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do
 			init_GUI(player)
 			playSoundForPlayer("ion-cannon-charging", player)
 		end
-		force.print({"ion-cannons-in-orbit" , #global.forces_ion_cannon_table[force.name]})
+		force.print({"ion-cannons-in-orbit", surfaceName, countOrbitingIonCannons(force, player.surface)})
 		return
 	elseif name == "add-five-ion-cannon" then
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
-		table.insert(global.forces_ion_cannon_table[force.name], {settings.global["ion-cannon-cooldown-seconds"].value, 0, surfaceName})
+		surfaceName = addIonCannon(force, player.surface)
+		addIonCannon(force, player.surface)
+		addIonCannon(force, player.surface)
+		addIonCannon(force, player.surface)
+		addIonCannon(force, player.surface)
 		global.IonCannonLaunched = true
 		script.on_nth_tick(60, process_60_ticks)
 		for i, player in pairs(force.connected_players) do
 			init_GUI(player)
 			playSoundForPlayer("ion-cannon-charging", player)
 		end
-		force.print({"ion-cannons-in-orbit" , #global.forces_ion_cannon_table[force.name]})
+		force.print({"ion-cannons-in-orbit", surfaceName, countOrbitingIonCannons(force, player.surface)})
 		return
 	elseif name == "remove-ion-cannon" then
-		if #global.forces_ion_cannon_table[force.name] > 0 then
-			table.remove(global.forces_ion_cannon_table[force.name])
+		if #GetCannonTableFromForce(force) > 0 then
+			table.remove(GetCannonTableFromForce(force))
 			for i, player in pairs(force.connected_players) do
 				update_GUI(player)
 			end
@@ -81,6 +82,8 @@ local on_gui_click = function(event)
 			player.print({"no-ion-cannons"})
 		end
 		return
+	elseif name == "recharge-ion-cannon" then
+		ReduceIonCannonCooldowns(settings.global["ion-cannon-cooldown-seconds"].value);
 	end
 end
 
@@ -118,32 +121,19 @@ function destroyUiElement(player, name)
 	element.parent[name].destroy()
 end
 
-function replaceOrCreateUiElement(player, name)
-	local element = findUiElementByName(player, name, false)
-
-	local definition = UiElementDefinitions[name]
-	if not definition then error("Definition not found. Name: '"..name.."'") end
-	if element then
-		local idx = element.get_index_in_parent()
-		definition["index"]=idx
-		element.destroy()
-	end
-	definition["name"]=name
-	return findUiElementByName(player, name, true)
-end
-
 function init_GUI(player)
 	--print("init_GUI")
 	--TODO is called every 60 seconds!
 
-	local ict = global.forces_ion_cannon_table[player.force.name]
-	if ict == nil or #ict == 0 and not player.cheat_mode then
+	local ict = GetCannonTableFromForce(player.force)
+	if ict == nil or #ict == 0 and not settings.global["ion-cannon-cheat-menu"].value then
 		local frame = player.gui.left["ion-cannon-stats"]
 		if frame then frame.destroy() end
 		if player.gui.top["ion-cannon-button"] then player.gui.top["ion-cannon-button"].destroy() end
 		destroyUiElement(player,"ion-cannon-button")
+	else
+		findUiElementByName(player, "ion-cannon-button", true)
 	end
-	findUiElementByName(player, "ion-cannon-button", true)
 end
 
 local createAdminPanel =function(parent)
@@ -178,7 +168,7 @@ function open_GUI(player)
 	if frame and global.goToFull[player_index] then
 		frame.destroy()
 	else
-		if global.goToFull[player_index] and #global.forces_ion_cannon_table[forceName] < 40 then
+		if global.goToFull[player_index] and #GetCannonTableFromForce(force) < 40 then
 			global.goToFull[player_index] = false
 			if frame then
 				frame.destroy()
@@ -186,12 +176,12 @@ function open_GUI(player)
 			frame = player.gui.left.add{type = "frame", name = "ion-cannon-stats", direction = "vertical"}
 			frame.add{type = "label", caption = {"ion-cannon-details-full"}}
 			frame.add{type = "table", column_count = 2, name = "ion-cannon-table"}
-			for i = 1, #global.forces_ion_cannon_table[forceName] do
+			for i = 1, #GetCannonTableFromForce(force) do
 				frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannon-num", i}}
-				if global.forces_ion_cannon_table[forceName][i][2] == 1 then
+				if GetCannonTableFromForce(force)[i][2] == 1 then
 					frame["ion-cannon-table"].add{type = "label", caption = {"ready"}}
 				else
-					frame["ion-cannon-table"].add{type = "label", caption = {"cooldown", global.forces_ion_cannon_table[forceName][i][1]}}
+					frame["ion-cannon-table"].add{type = "label", caption = {"cooldown", GetCannonTableFromForce(force)[i][1]}}
 				end
 			end
 		else
@@ -219,14 +209,16 @@ function open_GUI(player)
 					frame["ion-cannon-admin-panel-header"].add{type = "button", name = "add-five-ion-cannon", style = "ion-cannon-button-style"}
 					frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"ion-cannon-remove-one"}}
 					frame["ion-cannon-admin-panel-header"].add{type = "button", name = "remove-ion-cannon", style = "ion-cannon-remove-button-style"}
+					frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"ion-cannon-cheat-recharge-all"}}
+					frame["ion-cannon-admin-panel-header"].add{type = "button", name = "recharge-ion-cannon", style = "ion-cannon-button-style"}
 				end
 				frame["ion-cannon-admin-panel-header"].add{type = "label", caption = {"mod-setting-name.ion-cannon-auto-targeting"}}
 				frame["ion-cannon-admin-panel-header"].add{type = "checkbox", state = global.permissions[-2], name = "ion-cannon-auto-target-enabled"}
 			end
 			frame.add{type = "table", column_count = 1, name = "ion-cannon-table"}
-			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-in-orbit", #global.forces_ion_cannon_table[forceName]}}
+			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-in-orbit", player.surface.name, #GetCannonTableFromForce(force)}}
 			frame["ion-cannon-table"].add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force, player.surface)}}
-			if countIonCannonsReady(force, player.surface) < #global.forces_ion_cannon_table[forceName] then
+			if countIonCannonsReady(force, player.surface) < #GetCannonTableFromForce(force) then
 				frame["ion-cannon-table"].add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force, player.surface)}}
 			end
 		end
@@ -239,67 +231,51 @@ function update_GUI(player)
 	if not statsFrame then return end
 
 	local force = player.force
-	local forceName = force.name
+	--local forceName = force.name
 	local playerIndex = player.index
 
 	local cannonTable = statsFrame["ion-cannon-table"]
 	if cannonTable then cannonTable.destroy() end
 
 	if not global.goToFull[playerIndex] then
-		if false then --TODO configuration
-			cannonTable = createFullCannonTable(player)
-		else
+		--if false then --TODO configuration
+		--	cannonTable = createFullCannonTable(player)
+		--else
 			cannonTable = createFullCannonTableFiltered(player)
-		end
+		--end
 	else
 		cannonTable = statsFrame.add{type = "table", column_count = 1, name = "ion-cannon-table"}
-		--cannonTable.add{type = "label", caption = {"ion-cannons-in-orbit", #global.forces_ion_cannon_table[forceName]}}
+		--cannonTable.add{type = "label", caption = {"ion-cannons-in-orbit", #GetCannonTableFromForce(force)}}
 		local numCannons = 0
 		if false then
-			numCannons =  #global.forces_ion_cannon_table[forceName]
+			numCannons =  #GetCannonTableFromForce(force)
 		else
-			for i = 1, #global.forces_ion_cannon_table[forceName] do
-				if player.surface.name == global.forces_ion_cannon_table[forceName][i][3] then numCannons=numCannons+1 end
+			for i = 1, #GetCannonTableFromForce(force) do
+				if player.surface.name == GetCannonTableFromForce(force)[i][3] then numCannons=numCannons+1 end
 			end
 		end
 
-		cannonTable.add{type = "label", caption = {"ion-cannons-in-orbit", numCannons}}
+		cannonTable.add{type = "label", caption = {"ion-cannons-in-orbit", player.surface.name, numCannons}}
 		cannonTable.add{type = "label", caption = {"ion-cannons-ready", countIonCannonsReady(force, player.surface)}}
-		if countIonCannonsReady(force, player.surface) < #global.forces_ion_cannon_table[forceName] then
+		if countIonCannonsReady(force, player.surface) < countOrbitingIonCannons(force, player.surface) then
 			cannonTable.add{type = "label", caption = {"time-until-next-ready", timeUntilNextReady(force, player.surface)}}
 		end
 	end
 end
 
-function createFullCannonTable(player)
-	local statsFrame = player.gui.left["ion-cannon-stats"]
-	local forceName = player.force.name
-	local cannonTable = statsFrame.add{type = "table", column_count = 3, name = "ion-cannon-table"}
-	for i = 1, #global.forces_ion_cannon_table[forceName] do
-		cannonTable.add{type = "label", caption = {"ion-cannon-num", i}}
-		if global.forces_ion_cannon_table[forceName][i][2] == 1 then
-			cannonTable.add{type = "label", caption = {"ready"}}
-		else
-			cannonTable.add{type = "label", caption = {"cooldown", global.forces_ion_cannon_table[forceName][i][1]}}
-		end
-		cannonTable.add{type = "label", caption = "["..tostring(global.forces_ion_cannon_table[forceName][i][3]).."]"}
-	end
-	return cannonTable
-end
-
 function createFullCannonTableFiltered(player)
 	local statsFrame = player.gui.left["ion-cannon-stats"]
-	local forceName = player.force.name
+	local force = player.force
 	local cannonTable = statsFrame.add{type = "table", column_count = 2, name = "ion-cannon-table"}
-	for i = 1, #global.forces_ion_cannon_table[forceName] do
-		if player.surface.name ~= global.forces_ion_cannon_table[forceName][i][3] then goto next end
-		cannonTable.add{type = "label", caption = {"ion-cannon-num", i}}
-		if global.forces_ion_cannon_table[forceName][i][2] == 1 then
-			cannonTable.add{type = "label", caption = {"ready"}}
-		else
-			cannonTable.add{type = "label", caption = {"cooldown", global.forces_ion_cannon_table[forceName][i][1]}}
+	for i = 1, #GetCannonTableFromForce(force) do
+		if player.surface.name == GetCannonTableFromForce(force)[i][3] then
+			cannonTable.add{type = "label", caption = {"ion-cannon-num", i}}
+			if GetCannonTableFromForce(force)[i][2] == 1 then
+				cannonTable.add{type = "label", caption = {"ready"}}
+			else
+				cannonTable.add{type = "label", caption = {"cooldown", GetCannonTableFromForce(force)[i][1]}}
+			end
 		end
-		::next::
 	end
 	return cannonTable
 end

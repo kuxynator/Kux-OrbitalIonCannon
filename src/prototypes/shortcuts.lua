@@ -1,12 +1,12 @@
 local newBaseVersion = Version.baseVersionGreaterOrEqual1d1()
 
 data.raw.item["ion-cannon-targeter"].flags = data.raw.item["ion-cannon-targeter"].flags or {}
-table.insert(data.raw.item["ion-cannon-targeter"].flags, "only-in-cursor")
+--table.insert(data.raw.item["ion-cannon-targeter"].flags, "only-in-cursor")
 if newBaseVersion then table.insert(data.raw.item["ion-cannon-targeter"].flags, "spawnable") end
 
-local color = function (category, color, text)
+--[[local color = function (category, color, text)
 	
-end
+end]]
 
 data:extend({
     {
@@ -17,6 +17,7 @@ data:extend({
         -- associated_control_input = "ion-cannon-targeter",
         action = "lua", -- script.on_event(defines.events.on_lua_shortcut,...)
         style = "red",
+        technology_to_unlock = "orbital-ion-cannon",
         icon = {
             filename = ModPath.."graphics/ion-cannon-targeter-x32-white.png",
             priority = "extra-high-no-scale",

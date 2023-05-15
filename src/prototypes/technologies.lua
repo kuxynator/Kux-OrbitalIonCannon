@@ -1,25 +1,49 @@
-local tech = {}
 
-tech.init = function ()
 	local prerequision2level = 6
 	local prerequision2name= "energy-weapons-damage-"
 
-	if mods["space-exploration"] and settings.startup["ion-cannon-early-recipe"].value then prerequision2level = 4 end
+	if mods["space-exploration"] and settings.startup["ion-cannon-early-recipe"].value then prerequision2level = 2 end
 	if data.raw.technology["rampant-arsenal-technology-energy-weapons-damage-6"] then prerequision2name="rampant-arsenal-technology-energy-weapons-damage-" end
 
-	local ingredients =
-				{
-					{"automation-science-pack", 2},
-					{"logistic-science-pack", 2},
-					{"chemical-science-pack", 2},
-					{"military-science-pack", 2},
-					{"utility-science-pack", 2},
-					{"production-science-pack", 2}
-				}
+	local rocketSiloPrerequisite = "rocket-silo"
+	
+
+	local ingredientsCannon =
+	{
+		{"automation-science-pack", 1},
+		{"logistic-science-pack", 1},
+		{"chemical-science-pack", 1},
+		{"military-science-pack", 1}
+	}
+
+	--Add rocket science pack prerequisite and research cost for SE 0.6
+	if data.raw["technology"]["se-rocket-science-pack"] then
+		rocketSiloPrerequisite = "se-rocket-science-pack"
+		table.insert(ingredientsCannon, {"se-rocket-science-pack", 1})
+	end
 
 	if not settings.startup["ion-cannon-early-recipe"].value then
-		table.insert(ingredients, {"space-science-pack", 2})
+		table.insert(ingredientsCannon, {"utility-science-pack", 1})
+		table.insert(ingredientsCannon, {"production-science-pack", 1})
+		table.insert(ingredientsCannon, {"space-science-pack", 1})
+	elseif not mods["space-exploration"] then
+		table.insert(ingredientsCannon, {"utility-science-pack", 1})
+		table.insert(ingredientsCannon, {"production-science-pack", 1})
 	end
+
+	local ingredientsTargeting =
+	{
+		{"automation-science-pack", 1},
+		{"logistic-science-pack", 1},
+		{"chemical-science-pack", 1},
+		{"military-science-pack", 1},
+		{"space-science-pack", 1}
+	}
+	if not mods["space-exploration"] or not settings.startup["ion-cannon-early-recipe"].value then 
+		table.insert(ingredientsTargeting, {"utility-science-pack", 1})
+		table.insert(ingredientsTargeting, {"production-science-pack", 1})
+	end
+
 
 	data:extend({
 		{
@@ -27,7 +51,7 @@ tech.init = function ()
 			name = "orbital-ion-cannon",
 			icon = ModPath.."graphics/icon64.png",
 			icon_size = 64,
-			prerequisites = {"rocket-silo", prerequision2name..prerequision2level},
+			prerequisites = {rocketSiloPrerequisite, prerequision2name..prerequision2level},
 			effects =
 			{
 				{
@@ -41,8 +65,8 @@ tech.init = function ()
 			},
 			unit =
 			{
-				count = 2500,
-				ingredients = ingredients,
+				count = 5000,
+				ingredients = ingredientsCannon,
 				time = 60
 			},
 			order = "k-a"
@@ -56,42 +80,25 @@ tech.init = function ()
 			effects = {},
 			unit =
 			{
-				count = 2000,
-				ingredients =
-				{
-					{"automation-science-pack", 2},
-					{"logistic-science-pack", 2},
-					{"chemical-science-pack", 2},
-					{"military-science-pack", 2},
-					{"utility-science-pack", 2},
-					{"production-science-pack", 2},
-					{"space-science-pack", 2}
-				},
+				count = 4000,
+				ingredients = ingredientsTargeting,
 				time = 60
 			},
 			order = "k-b"
 		},
 	})
 
-	if data.raw["item"]["bob-laser-turret-5"] and settings.startup["ion-cannon-bob-updates"].value then
-		data.raw["technology"]["orbital-ion-cannon"].prerequisites = {"rocket-silo", "energy-weapons-damage-6", "bob-laser-turrets-5"}
+if settings.startup["ion-cannon-bob-updates"].value then
+	if data.raw["technology"]["energy-weapons-damage-6"] and data.raw["technology"]["bob-laser-turrets-5"] and data.raw["item"]["bob-laser-turret-5"] then
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "energy-weapons-damage-6")
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "bob-laser-turrets-5")
 	end
 
-	if data.raw["item"]["fast-accumulator-3"] and data.raw["item"]["solar-panel-large-3"] and settings.startup["ion-cannon-bob-updates"].value then
-		data.raw["technology"]["orbital-ion-cannon"].prerequisites = {"rocket-silo", "energy-weapons-damage-6",	"bob-solar-energy-4", "bob-electric-energy-accumulators-4"}
+	if data.raw["item"]["fast-accumulator-3"] and data.raw["technology"]["bob-electric-energy-accumulators-3"] then
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "bob-electric-energy-accumulators-3")
 	end
 
-	if data.raw["item"]["fast-accumulator-3"] and data.raw["item"]["solar-panel-large-3"] and data.raw["item"]["bob-laser-turret-5"] and settings.startup["ion-cannon-bob-updates"].value then
-		data.raw["technology"]["orbital-ion-cannon"].prerequisites = {"rocket-silo", "energy-weapons-damage-6", "bob-solar-energy-4", "bob-electric-energy-accumulators-4", "bob-laser-turrets-5"}
+	if data.raw["item"]["solar-panel-large-3"] and data.raw["technology"]["bob-solar-energy-3"] then
+		table.insert(data.raw["technology"]["orbital-ion-cannon"].prerequisites, "bob-solar-energy-3")
 	end
 end
-
-tech.updates = function ()
-
-end
-
-tech.finalFixes = function ()
-	
-end
-
-return tech
