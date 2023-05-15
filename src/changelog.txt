@@ -1,11 +1,11 @@
 ---------------------------------------------------------------------------------------------------
-Version: 2.4.0
-Date: 2023-05-19
+Version: 2.4.1
+Date: 2023-05-15
   Info:
     - add dependency Kux-CoreLib
     - add mod.lua
     - move util parts to Kux-CoreLib
-    - use Version, String from Kuy-CoreLib
+    - use Version, String from Kux-CoreLib
 ---------------------------------------------------------------------------------------------------
 Version: 2.3.4
 Date: 2023-1-1

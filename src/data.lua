@@ -1,7 +1,5 @@
 ModPath="__Kux-OrbitalIonCannon__/" -- Orbital Ion Cannon
 
-require "tools"
-
 require "prototypes.ion-cannon-targeter"
 require "prototypes.orbital-ion-cannon"
 

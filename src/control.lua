@@ -1,6 +1,5 @@
 local mod = require("mod")
 if script.active_mods["gvv"] then require("__gvv__.gvv")() end
-require "tools"
 require(mod.KuxCoreLibPath.."Version")
 -- require("__stdlib__/stdlib/core")
 local Chunk = require("__stdlib__/stdlib/area/chunk")

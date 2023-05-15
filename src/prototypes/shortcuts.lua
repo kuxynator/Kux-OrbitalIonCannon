@@ -1,3 +1,6 @@
+local mod = require("mod")
+local Version = require(mod.KuxCoreLibPath.."Version")
+
 local newBaseVersion = Version.baseVersionGreaterOrEqual1d1()
 
 data.raw.item["ion-cannon-targeter"].flags = data.raw.item["ion-cannon-targeter"].flags or {}

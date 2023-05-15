@@ -7,7 +7,7 @@
 	"homepage": "",
 	"dependencies": [
 		"base",
-		"Kux-CoreLib",
+		"Kux-CoreLib >= 2.4.1",
 		"stdlib",
 		"? bobwarfare",
 		"? bobpower",
