@@ -207,6 +207,7 @@ end
 --- @param e EventData.on_built_entity
 function this.on_built_entity(e)
 	local entity = e.entity
+	if not entity.valid then return end
 	local targeter_names ={"ion-cannon-targeter", "ion-cannon-targeter-mk2"}
 	for _, targeter_name in ipairs(targeter_names) do
 		if entity.name == targeter_name then
