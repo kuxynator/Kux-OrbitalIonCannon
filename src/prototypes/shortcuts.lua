@@ -1,4 +1,4 @@
-local mod = require("mod")
+local mod = require("mod").initStage()
 local Version = KuxCoreLib.Version
 
 local newBaseVersion = Version.baseVersionGreaterOrEqual1d1()

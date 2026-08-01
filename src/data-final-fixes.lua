@@ -1,4 +1,4 @@
-require("mod")
+_G.mod = require("mod").initStage().asGlobal()
 
 --revert changes made by other mods. only a workoround not a solution!
 if mods["5dim_core"] then

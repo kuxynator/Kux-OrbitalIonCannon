@@ -31,10 +31,12 @@ do --#region ElementBuilder
 	local empty_widget = eb.emptywidget
 
 	createButtonContent = function(button)
-		ElementBuilder.createView{
+		ElementBuilder.createPart{ --TODO does not yet work, missing tags.path
 			container = button,
+			parent_view_name = "mod_gui",
+			part_name ="ion-cannon-button-content",
 
-		empty_widget{ width = 32, height = 32, children = {
+			empty_widget{ width = 32, height = 32, children = {
 				flow{
 					width = 32, height = 32,
 					horizontal_align = "right",
@@ -162,6 +164,11 @@ function getUiElement(parent, name, createIfNotExist)
 	return parent.add(definition)
 end
 
+---
+---@param player LuaPlayer
+---@param name string
+---@param createIfNotExist boolean
+---@return LuaGuiElement|nil
 function findUiElementByName(player, name, createIfNotExist)
 	if name == "ion-cannon-button" then return getUiElement(mod_gui.get_button_flow(player), name, createIfNotExist) end
 	error("Unknwon element. Name: '"..name.."'")
@@ -290,7 +297,9 @@ function update_GUI(player)
 	if button then
 		local numReadyCannons = IonCannon.countReady(force, surfaceName)
 		local numCannons = IonCannon.countOrbitingIonCannons (force, surfaceName)
+
 		--if #button.children == 0 then createButtonContent(button) end
+		ElementBuilder.ensureModGuiInitialized(button)--Fix 260727
 		button.clear(); createButtonContent(button) --WORKAROUND for GUI Unifier
 
 		button.children[1].children[1].children[1].caption = tostring(numCannons)

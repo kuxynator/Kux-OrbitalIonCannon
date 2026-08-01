@@ -1,7 +1,8 @@
 {
 	"folders": [
 		{"path": "."},
-		{"path": "../Kux-CoreLib"}
+		{"path": "../Kux-CoreLib"},
+		{"path": "../Kux-GuiLib"}
 	],
 	"settings": {
 		"factorio.versions": [
@@ -11,8 +12,7 @@
 			},
 			{
 				"name": "Debug",
-				"factorioPath": "e:\\Program Files\\Factorio\\2.0\\Debug\\bin\\x64\\factorio.exe",
-				"active": true
+				"factorioPath": "e:\\Program Files\\Factorio\\2.0\\Debug\\bin\\x64\\factorio.exe"
 			},
 			{
 				"name": "Debug-X",
@@ -25,6 +25,10 @@
 			{
 				"name": "5dim",
 				"factorioPath": "e:\\Program Files\\Factorio\\2.0\\5dim\\bin\\x64\\factorio.exe"
+			},
+			{
+				"name": "Migration2.1",
+				"factorioPath": "e:\\Program Files\\Factorio\\2.0\\ModMigration2.1\\bin\\x64\\factorio.exe"
 			}
 		],
 		"Lua.workspace.userThirdParty": [

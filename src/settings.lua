@@ -1,4 +1,4 @@
-require("mod")
+_G.mod = require("mod").initStage().asGlobal()
 local extend = KuxCoreLib.SettingsData.extend
 
 

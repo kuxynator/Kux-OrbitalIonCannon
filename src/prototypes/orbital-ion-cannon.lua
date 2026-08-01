@@ -3,7 +3,7 @@ local util = require("util")
 local isSpaceTravel = feature_flags["space_travel"]
 
 if isSpaceTravel then
-	local entity = EntityData.clone("radar", "radar", "orbital-ion-cannon") --[[@as data.RadarPrototype]]
+	local entity = EntityData.clone("radar", "radar", "orbital-ion-cannon") --[[@as RadarPrototype]]
 	entity.rotation_speed = 0
 	entity.energy_per_sector = "1MJ"
 	entity.energy_per_nearby_scan = "1MJ"
@@ -11,6 +11,7 @@ if isSpaceTravel then
 	entity.max_distance_of_sector_revealed = 0
 	entity.max_distance_of_nearby_sector_revealed = 0
 	entity.minable = {mining_time = 0.1, result = "radar"}
+	entity.surface_conditions = {{ property = "pressure", min = 0, max = 0 }}-- FEATURE 260801 user suggestion
 	entity.fast_replaceable_group = nil
 	entity.next_upgrade = nil
 	if settings.startup["ion-cannon-1x1-controler"].value ==true then
@@ -89,7 +90,7 @@ end
 ]]
 
 if isSpaceTravel then
-	local entity = EntityData.clone("radar", "orbital-ion-cannon", "orbital-ion-cannon-mk2") --[[@as data.RadarPrototype]]
+	local entity = EntityData.clone("radar", "orbital-ion-cannon", "orbital-ion-cannon-mk2") --[[@as RadarPrototype]]
 	data:extend{entity}
 
 

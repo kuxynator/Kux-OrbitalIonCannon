@@ -1,4 +1,4 @@
-require("mod")
+_G.mod = require("mod").initStage().asGlobal()
 
 require "prototypes/ion-cannon-targeter"
 require "prototypes/orbital-ion-cannon"

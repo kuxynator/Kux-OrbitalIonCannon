@@ -10,7 +10,7 @@ Control = {}
 ---@class Control.private : Control
 local this = {}
 ---------------------------------------------------------------------------------------------------
-require("mod")
+_G.mod = require("mod").initStage().asGlobal()
 if script.active_mods["gvv"] then require("__gvv__.gvv")() end
 Version = KuxCoreLib.Version.asGlobal()
 Events = KuxCoreLib.Events.asGlobal()
@@ -135,7 +135,10 @@ function this.process_60_ticks(e)
 		end
 	end
 	for i, player in pairs(game.connected_players) do
+		local restore = _G.player
+		_G.player = player
 		update_GUI(player)
+		_G.player = restore
 	end
 end
 

@@ -23,7 +23,8 @@ local function createTargetRecipe(name)
 			name = name,
 			energy_required = 0.5,
 			enabled = false,
-			category = "crafting",
+			category = not isV21 and "crafting" or nil,
+			categories = isV21 and {"crafting"} or nil,
 			ingredients =
 			{
 				{type="item", name ="processing-unit", amount=1},
