@@ -47,7 +47,7 @@ end
 ---@param surface LuaSurfaceId
 ---@return integer
 function IonCannon.countReady(force, surface)
-	surfaceName = this.getOrbitingSurface(surface).name
+	local surfaceName = this.getOrbitingSurface(surface).name
 	local count = 0
 	for i, cannon in pairs(IonCannonStorage.fromForce(force)) do
 		if cannon[3]==surfaceName and cannon[2] == 1 then count = count + 1 end
@@ -169,10 +169,9 @@ function IonCannon.target(force, position, surface, player)
 		return false
 	else
 		local current_tick = game.tick
-		local TargetPosition = position
-		TargetPosition.y = TargetPosition.y + 1
-		local target = surface.create_entity({name = "ion-cannon-target", position = TargetPosition, force = game.forces.neutral}) or error("Invalid state")
-		local marker = force.add_chart_tag(surface, {icon = {type = "item", name = "ion-cannon-targeter"}, text = "Ion cannon #" .. cannonNum .. " target location (" .. targeterName .. ")", position = TargetPosition})
+		local targetPosition = { x = position.x, y = position.y + 1}
+		local target = surface.create_entity({name = "ion-cannon-target", position = targetPosition, force = game.forces["neutral"]}) or error("Invalid state")
+		local marker = force.add_chart_tag(surface, {icon = {type = "item", name = "ion-cannon-targeter"}, text = "Ion cannon #" .. cannonNum .. " target location (" .. targeterName .. ")", position = targetPosition})
 		table.insert(storage.markers, {marker, current_tick + settings.global["ion-cannon-chart-tag-duration"].value})
 		local CrosshairsPosition = position
 		CrosshairsPosition.y = CrosshairsPosition.y - 20
@@ -211,10 +210,10 @@ function IonCannon.target(force, position, surface, player)
 			player.print({"targeting-ion-cannon" , cannonNum})
 			for i, p in pairs(player.force.connected_players) do
 				if settings.get_player_settings(p)["ion-cannon-custom-alerts"].value then
-					p.add_custom_alert(target, {type = "item", name = "orbital-ion-cannon"}, {"ion-cannon-target-location", cannonNum, TargetPosition.x, TargetPosition.y, targeterName}, true)
+					p.add_custom_alert(target, {type = "item", name = "orbital-ion-cannon"}, {"ion-cannon-target-location", cannonNum, targetPosition.x, targetPosition.y, targeterName}, true)
 				end
 			end
-			script.raise_event(_G.when_ion_cannon_targeted, {surfce = surface, force = force, position = position, radius = this.getRadius(force), player_index = player.index,})		-- Passes event.surface, event.force, event.position, event.radius, and event.player_index
+			script.raise_event(_G.when_ion_cannon_targeted, {surface = surface, force = force, position = position, radius = this.getRadius(force), player_index = player.index,})		-- Passes event.surface, event.force, event.position, event.radius, and event.player_index
 		else
 			script.raise_event(_G.when_ion_cannon_targeted, {surface = surface, force = force, position = position, radius =this.getRadius(force)})		-- Passes event.surface, event.force, event.position, and event.radius
 		end

@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
-Version: 4.8.15 WIP
+Version: 4.8.15
   Changes:
     - Fix Factorio 2.1 migration issues
     - surface_conditions = {{ property = "pressure", min = 0, max = 0 }}

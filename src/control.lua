@@ -12,12 +12,13 @@ local this = {}
 ---------------------------------------------------------------------------------------------------
 _G.mod = require("mod").initStage().asGlobal()
 if script.active_mods["gvv"] then require("__gvv__.gvv")() end
-Version = KuxCoreLib.Version.asGlobal()
-Events = KuxCoreLib.Events.asGlobal()
+Version = KuxCoreLib.require.Version.asGlobal()
+Events = KuxCoreLib.require.Events.asGlobal()
 -- require("__Kux-CoreLib__/stdlib/core")
 Area = require("__Kux-CoreLib__/stdlib/area/area") -- preload required by Position
 Chunk = require("__Kux-CoreLib__/stdlib/area/chunk")
 Position = require("__Kux-CoreLib__/stdlib/area/position")
+TranslationService = KuxCoreLib.require.TranslationService.asGlobal()
 
 require "modules/tools"
 require "modules/autotargeter"
@@ -35,9 +36,18 @@ setmetatable(this, {__index = Control})
 
 _G.when_ion_cannon_targeted = nil
 
+---
+---@param e KuxCoreLib.StartEventData
+function this.initialize(e)
+	if e.source == "on_load" then
+		fLog("initialize on_load")
+		Interface.generateEvents()
+		if storage.IonCannonLaunched then this.enableNthTick60() end
+		return
+	end
 
-function this.initialize()
-	fLog("initialize")
+	fLog("initialize "..e.source)
+
 	-- on_init, on_configuration_changed, on_force_created
 	Interface.generateEvents()
 	IonCannonStorage.initialize()
@@ -68,14 +78,6 @@ function this.initialize()
 	end
 	if IonCannonStorage.countAll() > 0 then
 		storage.IonCannonLaunched = true
-		this.enableNthTick60()
-	end
-end
-
-function this.onLoad()
-	fLog("onLoad")
-	Interface.generateEvents()
-	if storage.IonCannonLaunched then
 		this.enableNthTick60()
 	end
 end
@@ -259,10 +261,7 @@ Events.on_event(c_on_pre_build, this.on_pre_build)
 Events.on_event(defines.events.on_rocket_launched, this.on_rocket_launched)
 
 
-
-Events.on_init(this.initialize)
-Events.on_load(this.onLoad)
-script.on_configuration_changed(this.initialize)
+Events.on_start(this.initialize)
 
 commands.add_command("ion-cannon", {"command-help.ion-cannon"}, function(event)
 	local player = game.players[event.player_index] --[[@as LuaPlayer]]
